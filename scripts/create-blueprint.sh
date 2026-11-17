@@ -337,8 +337,8 @@ main() {
   local title source_url import_url
   title="$(to_title "${name}")"
   source_url="${GITHUB_URL}/blob/main/${path}/${name}.yaml"
-  import_url="${MY_HA_URL}/create-link/?redirect=blueprint_import"
-  import_url+="&blueprint_url=$(url_encode "${source_url}")"
+  import_url="${MY_HA_URL}/redirect/blueprint_import/"
+  import_url+="?blueprint_url=$(url_encode "${source_url}")"
 
   mkdir -p "${dir}/tests"
   write_blueprint "${dir}/${name}.yaml" "${domain}" "${name}" "${title}" \
