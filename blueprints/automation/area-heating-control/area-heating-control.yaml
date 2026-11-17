@@ -2,13 +2,9 @@ blueprint:
   name: Area Heating Control 2.0
   # yamllint disable rule:line-length
   description: |
-    [![License](https://img.shields.io/badge/license-MIT-blue)](https://github.com/mxstzdev/home-assistant-blueprints/blob/main/LICENSE)
-    [![Version](https://img.shields.io/static/v1?label=version&message=2.0.1&color=blue)](https://github.com/mxstzdev/home-assistant-blueprints/blob/main/blueprints/automation/area-heating-control/CHANGELOG.md) <!-- x-release-please-version -->
-    [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-%E2%89%A5%202025.1.0-41BDF5?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/)
+    [![License](https://img.shields.io/badge/license-MIT-blue)](https://github.com/mxstzdev/home-assistant-blueprints/blob/main/LICENSE) [![Version](https://img.shields.io/static/v1?label=version&message=2.0.1&color=blue)](https://github.com/mxstzdev/home-assistant-blueprints/blob/main/blueprints/automation/area-heating-control/CHANGELOG.md) [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-%E2%89%A5%202025.1.0-41BDF5?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/) <!-- x-release-please-version -->
 
-    Area based heating control. It uses Home Assistant's
-    [areas](https://www.home-assistant.io/docs/organizing/areas/) to find the thermostats and sensors of
-    a room and keeps them at the right temperature.
+    Area based heating control. It uses Home Assistant's [areas](https://www.home-assistant.io/docs/organizing/areas/) to find the thermostats and sensors of a room and keeps them at the right temperature.
 
     - 🌱 Comfort, eco and away temperatures, static or from `input_number` helpers
     - 🗓️ Schedules: comfort while any selected schedule is on
@@ -16,13 +12,11 @@ blueprint:
     - 🚶 Presence sensor: comfort while the room is occupied
     - ✈️ Away: vacation mode, or away temperature once nobody has been home for a while
     - 🪟 Windows: heating off, frost protection, or the thermostat's own window handling
-    - ♨️ Central heating system and ☀️ outdoor temperature (sensor or weather): heating off when it
-      is not needed
+    - ♨️ Central heating system and ☀️ outdoor temperature (sensor or weather): heating off when it is not needed
     - 🚀 Boost, using the thermostat's own boost where available
     - 🎛️ Wall controllers: changes on them apply to the whole room
     - 🔒 Read-only thermostats, with the device's child lock where available
-    - ⚙️ Calibration against external temperature sensors, via the thermostat's external input or
-      its offset
+    - ⚙️ Calibration against external temperature sensors, via the thermostat's external input or its offset
     - ⚔️ Weekly limescale protection for radiator valves
     - 🕵️ Auto-discovery of all of the above from the area
 
@@ -35,12 +29,15 @@ blueprint:
   source_url: https://github.com/mxstzdev/home-assistant-blueprints/blob/main/blueprints/automation/area-heating-control/area-heating-control.yaml
   homeassistant:
     min_version: "2025.1.0"
+  # Descriptions keep one line per paragraph so they wrap to the screen width.
+  # yamllint disable rule:line-length
   input:
     area:
       name: Area
-      description: >
-        The area to control. Only areas with at least one climate entity are listed. Every entity
-        list below is optional: if it is left empty, matching entities of this area are used.
+      description: |
+        The area to control. Only areas with at least one climate entity are listed.
+
+        Every entity list below is optional: if it is left empty, matching entities of this area are used.
       selector:
         area:
           entity:
@@ -64,9 +61,8 @@ blueprint:
               unit_of_measurement: °C
         comfort_temperature_entity:
           name: Comfort temperature entity
-          description: >
-            Optional. An input number that holds the comfort temperature. Overrides the static value
-            above while it has a valid state.
+          description: |
+            Optional. An `input_number` that holds the comfort temperature. Overrides the static value above while it has a valid state.
           default: []
           selector:
             entity:
@@ -85,9 +81,8 @@ blueprint:
               unit_of_measurement: °C
         eco_temperature_entity:
           name: Eco temperature entity
-          description: >
-            Optional. An input number that holds the eco temperature. Overrides the static value
-            above while it has a valid state.
+          description: |
+            Optional. An `input_number` that holds the eco temperature. Overrides the static value above while it has a valid state.
           default: []
           selector:
             entity:
@@ -95,8 +90,8 @@ blueprint:
                 - domain: input_number
         away_temperature:
           name: Away temperature
-          description: >
-            Used during vacation mode or after nobody has been home for the away delay (see Away).
+          description: |
+            Used during vacation mode or after nobody has been home for the away delay, see **Away**.
           default: 15
           selector:
             number:
@@ -107,9 +102,8 @@ blueprint:
               unit_of_measurement: °C
         away_temperature_entity:
           name: Away temperature entity
-          description: >
-            Optional. An input number that holds the away temperature. Overrides the static value
-            above while it has a valid state.
+          description: |
+            Optional. An `input_number` that holds the away temperature. Overrides the static value above while it has a valid state.
           default: []
           selector:
             entity:
@@ -123,9 +117,10 @@ blueprint:
       input:
         valves:
           name: Radiator thermostats
-          description: >
-            Radiator thermostats (TRVs) with a single target temperature. Empty: all climate
-            entities of the area with a single target temperature.
+          description: |
+            Radiator thermostats (TRVs) with a single target temperature.
+
+            **Empty:** all climate entities of the area with a single target temperature.
           default: []
           selector:
             entity:
@@ -136,10 +131,11 @@ blueprint:
                     - climate.ClimateEntityFeature.TARGET_TEMPERATURE
         valve_behaviour:
           name: Radiator thermostat input mode
-          description: >
-            What happens when someone changes the target temperature on a radiator thermostat.
-            **Temporary**: kept until the next change in the area. **Read-only**: reverted at once,
-            and the thermostat's child lock is turned on where available.
+          description: |
+            What happens when someone changes the target temperature on a radiator thermostat:
+
+            - **Temporary:** kept until the next change in the area.
+            - **Read-only:** reverted at once, and the thermostat's child lock is turned on where available.
           default: temporary
           selector:
             select:
@@ -156,10 +152,10 @@ blueprint:
       input:
         controllers:
           name: Wall controllers
-          description: >
-            Wall thermostats with a target temperature range. They are set to the area target.
-            Turning one off turns the area off until it is turned on again. Empty: all climate
-            entities of the area with a target temperature range.
+          description: |
+            Wall thermostats with a target temperature range. They are set to the area target. Turning one off turns the area off until it is turned on again.
+
+            **Empty:** all climate entities of the area with a target temperature range.
           default: []
           selector:
             entity:
@@ -170,11 +166,12 @@ blueprint:
                     - climate.ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
         controller_behaviour:
           name: Wall controller input mode
-          description: >
-            What happens when someone changes the target temperature on a wall controller.
-            **Read-only**: reverted at once, and the controller's child lock is turned on where
-            available. **Temporary**: all thermostats follow it until the next change in the area.
-            **Persistent**: written to the active temperature entity (Temporary without one).
+          description: |
+            What happens when someone changes the target temperature on a wall controller:
+
+            - **Read-only:** reverted at once, and the controller's child lock is turned on where available.
+            - **Temporary:** all thermostats follow it until the next change in the area.
+            - **Persistent:** written to the active temperature entity, or *Temporary* without one.
           default: temporary
           selector:
             select:
@@ -193,20 +190,24 @@ blueprint:
       input:
         calibration:
           name: Calibration
-          description: >
-            Makes each thermostat use the area temperature. Thermostats with an external temperature
-            input get the area temperature written to it; others get their calibration or offset
-            number adjusted. Skipped while there are neither temperature sensors nor wall
-            controllers.
+          description: |
+            Makes each thermostat use the area temperature:
+
+            - **External temperature input:** the area temperature is written to it.
+            - **Otherwise:** the thermostat's calibration or offset number is adjusted.
+
+            Skipped while there are neither temperature sensors nor wall controllers.
           default: true
           selector:
             boolean:
         temperature_sensors:
           name: Temperature sensors
-          description: >
-            The area temperature is their median. Empty: all temperature sensors of the area that do
-            not belong to a thermostat. Sensors of a wall controller are always ignored. Without
-            sensors, the wall controllers' temperature is used.
+          description: |
+            The area temperature is their median.
+
+            - **Empty:** all temperature sensors of the area that do not belong to a thermostat.
+            - Sensors of a wall controller are always ignored.
+            - Without sensors, the wall controllers' temperature is used.
           default: []
           selector:
             entity:
@@ -291,8 +292,8 @@ blueprint:
       input:
         windows:
           name: Window sensors
-          description: >
-            Empty: all window and door sensors of the area.
+          description: |
+            **Empty:** all window and door sensors of the area.
           default: []
           selector:
             entity:
@@ -306,11 +307,12 @@ blueprint:
                     - door
         window_behaviour:
           name: Window open behaviour
-          description: >
-            **Off**: thermostats are turned off, or set to their minimum temperature if they have no
-            off mode. **Frost protection**: thermostats keep heating at the frost protection temperature.
-            **Native**: the window state is sent to each thermostat's own window input; thermostats
-            without one are turned off.
+          description: |
+            What happens while a window is open:
+
+            - **Off:** thermostats are turned off, or set to their minimum temperature if they have no off mode.
+            - **Frost protection:** thermostats keep heating at the frost protection temperature.
+            - **Native:** the window state is sent to each thermostat's own window input; thermostats without one are turned off.
           default: "off"
           selector:
             select:
@@ -473,10 +475,14 @@ blueprint:
       input:
         boost_entity:
           name: Boost trigger
-          description: >
-            Optional. Starts a boost when it turns on (or is pressed). Radiator thermostats use their
-            own boost preset if they have one, otherwise their maximum temperature. Selecting the
-            boost preset on a wall controller also starts a boost.
+          description: |
+            Optional. Starts a boost when it turns on, or when it is pressed. Radiator thermostats boost with the first of:
+
+            - their own `boost` preset
+            - a boost switch on the same device
+            - their maximum temperature
+
+            Selecting the `boost` preset on a wall controller also starts a boost.
           default: []
           selector:
             entity:
@@ -604,6 +610,7 @@ blueprint:
                 - label: Warning
                   value: warning
 
+# yamllint enable rule:line-length
 mode: queued
 max: 5
 max_exceeded: silent
