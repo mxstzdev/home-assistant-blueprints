@@ -133,7 +133,7 @@ blueprint:
                   supported_features:
                     - climate.ClimateEntityFeature.TARGET_TEMPERATURE
         valve_behaviour:
-          name: Radiator thermostat changes
+          name: Radiator thermostat input mode
           description: >
             What happens when someone changes the target temperature on a radiator thermostat.
             **Ignore**: kept until the next change in the area. **Read-only**: reverted at once.
@@ -179,7 +179,7 @@ blueprint:
                   supported_features:
                     - climate.ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
         controller_behaviour:
-          name: Wall controller changes
+          name: Wall controller input mode
           description: >
             What happens when someone changes the target temperature on a wall controller.
             **Read-only**: reverted at once. **Temporary**: all thermostats follow it until the next

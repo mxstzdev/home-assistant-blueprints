@@ -71,7 +71,7 @@ window sensors explicitly in the automation.
 
 ### A change on a thermostat is reverted or ignored
 
-This is set by *Radiator thermostat changes* and *Wall controller changes*, see
+This is set by *Radiator thermostat input mode* and *Wall controller input mode*, see
 [Changes on thermostats](how-it-works.md#changes-on-thermostats). By default, changes on radiator
 thermostats are kept only until the next change in the area, and changes on wall controllers apply
 to the whole area until then. While heating is off, changes on wall controllers are reverted.
