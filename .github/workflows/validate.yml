@@ -1,0 +1,86 @@
+name: Validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    # Weekly, to catch breaking changes in new stable Home Assistant releases.
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      blueprints: ${{ steps.list.outputs.blueprints }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: list
+        # A separate assignment makes the step fail if the script fails.
+        run: |
+          blueprints="$(bash scripts/list-blueprints.sh)"
+          echo "blueprints=${blueprints}" >> "$GITHUB_OUTPUT"
+
+  check-config:
+    needs: discover
+    if: >-
+      needs.discover.outputs.blueprints != ''
+      && needs.discover.outputs.blueprints != '[]'
+    name: ${{ matrix.blueprint }} @ ${{ matrix.ha }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        blueprint: ${{ fromJSON(needs.discover.outputs.blueprints) }}
+        ha: [min, stable]
+    steps:
+      - uses: actions/checkout@v5
+      - run: bash scripts/validate-blueprint.sh "$BLUEPRINT" "$HA"
+        env:
+          BLUEPRINT: ${{ matrix.blueprint }}
+          HA: ${{ matrix.ha }}
+
+  # Keeps scripts/create-blueprint.sh in line with the conventions.
+  scaffold:
+    name: create-blueprint.sh ${{ matrix.domain }} @ ${{ matrix.ha }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        domain: [automation, script]
+        ha: [min, stable]
+    steps:
+      - uses: actions/checkout@v5
+      - run: bash scripts/create-blueprint.sh -d "$DOMAIN" scaffold_check
+        env:
+          DOMAIN: ${{ matrix.domain }}
+      - run: pipx run --spec yamllint==1.37.1 yamllint --strict --format github blueprints
+      - run: bash scripts/validate-blueprint.sh "blueprints/$DOMAIN/scaffold_check" "$HA"
+        env:
+          DOMAIN: ${{ matrix.domain }}
+          HA: ${{ matrix.ha }}
+
+  # Single, stable check name for branch protection.
+  result:
+    needs: [discover, check-config, scaffold]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          if [[ "$DISCOVER" != success || "$SCAFFOLD" != success \
+            || ! "$CHECK" =~ ^(success|skipped)$ ]]; then
+            echo "::error::Blueprint validation failed"
+            exit 1
+          fi
+        env:
+          DISCOVER: ${{ needs.discover.result }}
+          CHECK: ${{ needs.check-config.result }}
+          SCAFFOLD: ${{ needs.scaffold.result }}

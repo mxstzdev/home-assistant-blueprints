@@ -1,0 +1,21 @@
+---
+extends: default
+
+rules:
+  # Blueprints and workflows are single-document files.
+  document-start: disable
+  line-length:
+    max: 120
+    level: warning
+    # Allows long URLs such as `source_url: https://...`.
+    allow-non-breakable-inline-mappings: true
+  truthy:
+    # Forces quoting of HA states such as "on" / "off".
+    allowed-values: ["true", "false"]
+    # GitHub Actions uses the bare `on:` key.
+    check-keys: false
+  comments:
+    min-spaces-from-content: 1
+  indentation:
+    spaces: 2
+    indent-sequences: consistent
