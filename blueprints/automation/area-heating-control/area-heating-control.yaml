@@ -200,7 +200,7 @@ blueprint:
         temperature_sensors:
           name: Temperature sensors
           description: >
-            The area temperature is their mean. Empty: all temperature sensors of the area that do
+            The area temperature is their median. Empty: all temperature sensors of the area that do
             not belong to a thermostat. Sensors of a wall controller are always ignored. Without
             sensors, the wall controllers' temperature is used.
           default: []
@@ -1030,7 +1030,7 @@ actions:
             {% endif %}
           {% endfor %}
         {% endif %}
-        {{ (ns.values | sum / ns.values | count) | round(2) if ns.values | count > 0 else none }}
+        {{ ns.values | median | round(2) if ns.values | count > 0 else none }}
 
       # --- Inputs with reaction times ---------------------------------------
       anybody_home: >
