@@ -19,6 +19,7 @@ blueprint:
     - ♨️ Central heating system and ☀️ outdoor temperature: heating off when it is not needed
     - 🚀 Boost, using the thermostat's own boost where available
     - 🎛️ Wall controllers: changes on them apply to the whole room
+    - 🔒 Read-only thermostats, with the device's child lock where available
     - ⚙️ Calibration against external temperature sensors, via the thermostat's external input or
       its offset
     - ⚔️ Weekly limescale protection for radiator valves
@@ -136,7 +137,8 @@ blueprint:
           name: Radiator thermostat input mode
           description: >
             What happens when someone changes the target temperature on a radiator thermostat.
-            **Temporary**: kept until the next change in the area. **Read-only**: reverted at once.
+            **Temporary**: kept until the next change in the area. **Read-only**: reverted at once,
+            and the thermostat's child lock is turned on where available.
           default: temporary
           selector:
             select:
@@ -169,9 +171,9 @@ blueprint:
           name: Wall controller input mode
           description: >
             What happens when someone changes the target temperature on a wall controller.
-            **Read-only**: reverted at once. **Temporary**: all thermostats follow it until the next
-            change in the area. **Persistent**: written to the active temperature entity
-            (Temporary without one).
+            **Read-only**: reverted at once, and the controller's child lock is turned on where
+            available. **Temporary**: all thermostats follow it until the next change in the area.
+            **Persistent**: written to the active temperature entity (Temporary without one).
           default: temporary
           selector:
             select:
@@ -1016,6 +1018,22 @@ actions:
         {% endfor %}
         {{ ns.map }}
 
+      # Child locks on thermostat devices (lock or switch), for the read-only input mode.
+      child_locks: >
+        {% set ns = namespace(map={}) %}
+        {% for id in valve_ids + controller_ids %}
+          {% set device = device_id(id) %}
+          {% if device %}
+            {% set entity = device_entities(device) | select('match', '(lock|switch)[.]')
+                 | select('search', 'child_lock|childlock|child_protection') | first
+                 | default(none) %}
+            {% if entity %}
+              {% set ns.map = dict(ns.map, **{id: entity}) %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.map }}
+
       # --- Area temperature -------------------------------------------------
       area_temperature: >
         {% set ns = namespace(values=[]) %}
@@ -1353,6 +1371,20 @@ actions:
                        'data': {'entity_id': entity, 'option': wanted}}] %}
                 {% endif %}
               {% endif %}
+            {% endif %}
+          {% endfor %}
+          {# Read-only thermostats are locked. Others are unlocked when the automation is
+             reloaded, for example after leaving read-only, so manual locks survive other runs. #}
+          {% for id, entity in child_locks.items() %}
+            {% set wanted = (controller_behaviour if id in controller_ids else valve_behaviour)
+                 == 'readonly' %}
+            {% set locked = is_state(entity, 'locked' if entity.startswith('lock.') else 'on') %}
+            {% if wanted and not locked %}
+              {% set ns.tasks = ns.tasks + [{'action': 'lock.lock' if entity.startswith('lock.')
+                   else 'switch.turn_on', 'data': {'entity_id': entity}}] %}
+            {% elif not wanted and locked and trigger_id == 'reconcile_reload' %}
+              {% set ns.tasks = ns.tasks + [{'action': 'lock.unlock' if entity.startswith('lock.')
+                   else 'switch.turn_off', 'data': {'entity_id': entity}}] %}
             {% endif %}
           {% endfor %}
           {% if boost_entity_id is not none and boost_entity_id.startswith('input_boolean.')
