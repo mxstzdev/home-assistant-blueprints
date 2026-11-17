@@ -109,5 +109,6 @@ it.
 
 ## New in 2.0
 
-Away temperature, vacation mode and away delay, radiator thermostat change handling, window open
-behaviour and window inputs, outdoor cutoff, boost, and external temperature inputs.
+Away temperature, vacation mode and away delay, input modes for radiator thermostats and wall
+controllers with child lock, window open behaviour and window inputs, outdoor cutoff, boost, and
+external temperature inputs.

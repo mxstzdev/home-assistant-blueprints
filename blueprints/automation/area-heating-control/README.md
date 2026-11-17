@@ -17,6 +17,7 @@ a room and keeps them at the right temperature.
 - ♨️ Central heating system and ☀️ outdoor temperature: heating off when it is not needed
 - 🚀 Boost, using the thermostat's own boost where available
 - 🎛️ Wall controllers: changes on them apply to the whole room
+- 🔒 Read-only thermostats, with the device's child lock where available
 - ⚙️ Calibration against external temperature sensors, via the thermostat's external input or
   its offset
 - ⚔️ Weekly limescale protection for radiator valves

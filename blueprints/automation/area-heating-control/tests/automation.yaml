@@ -17,7 +17,7 @@
       away_temperature_entity: input_number.living_room_away
       valves:
         - climate.living_room_radiator
-      valve_behaviour: temporary
+      valve_behaviour: readonly
       controllers:
         - climate.living_room_wall
       controller_behaviour: persistent

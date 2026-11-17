@@ -49,10 +49,14 @@ UI. Changes that match the area target, such as a device confirming a command, a
 | Input mode | Radiator thermostats | Wall controllers |
 | ---------- | -------------------- | ---------------- |
 | Temporary | Kept until the next change in the area (default) | All thermostats follow it until the next change in the area (default) |
-| Read-only | Reverted at once | Reverted at once |
+| Read-only | Reverted at once, child lock on | Reverted at once, child lock on |
 | Persistent | | Written to the active comfort, eco or away entity |
 
-"Persistent" falls back to "Temporary" if the active level has no entity. While heating is off,
+"Persistent" falls back to "Temporary" if the active level has no entity. In read-only mode, the
+child lock of the thermostat's device is turned on, if it has one: a `lock` or `switch` whose id
+contains `child_lock`, `childlock` or `child_protection`. In the other modes, the child lock is
+turned off when the automation is reloaded, for example after saving it, and left alone
+otherwise. While heating is off,
 changes on wall controllers are reverted. A change in the area is any event the blueprint reacts
 to, such as a schedule, a person, a window or the heating system. Selecting the `boost` preset on a
 wall controller boosts the whole area until the controller leaves the preset.
