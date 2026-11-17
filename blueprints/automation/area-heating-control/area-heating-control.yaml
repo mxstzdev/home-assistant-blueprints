@@ -2,7 +2,7 @@ blueprint:
   name: Area Heating Control 2.0
   # yamllint disable rule:line-length
   description: |
-    [![Version](https://img.shields.io/static/v1?label=version&message=2.1.0&color=blue)](https://github.com/mxstzdev/home-assistant-blueprints/blob/main/blueprints/automation/area-heating-control/CHANGELOG.md) [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-%E2%89%A5%202025.1.0-41BDF5?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/) <!-- x-release-please-version -->
+    [![Version](https://img.shields.io/static/v1?label=version&message=2.1.1&color=blue)](https://github.com/mxstzdev/home-assistant-blueprints/blob/main/blueprints/automation/area-heating-control/CHANGELOG.md) [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-%E2%89%A5%202025.1.0-41BDF5?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/) <!-- x-release-please-version -->
 
     Area based heating control. It uses Home Assistant's [areas](https://www.home-assistant.io/docs/organizing/areas/) to find the thermostats and sensors of a room and keeps them at the right temperature.
 
