@@ -208,7 +208,8 @@ blueprint:
           name: Temperature sensors
           description: >
             The area temperature is their mean. Empty: all temperature sensors of the area that do
-            not belong to a thermostat. Without sensors, the wall controllers' temperature is used.
+            not belong to a thermostat. Sensors of a wall controller are always ignored. Without
+            sensors, the wall controllers' temperature is used.
           default: []
           selector:
             entity:
@@ -946,6 +947,10 @@ actions:
           {% endif %}
         {% endfor %}
         {{ ns.ids | unique | list }}
+      controller_device_ids: >
+        {{ controller_ids | map('device_id') | select | unique | list }}
+      # Wall controller sensors are skipped even when selected: their own temperature is the
+      # fallback below, and counting it twice would skew the area temperature.
       sensor_ids: >
         {% set ns = namespace(ids=[]) %}
         {% if temperature_sensors | count > 0 %}
@@ -955,7 +960,7 @@ actions:
                | select('is_state_attr', 'device_class', 'temperature') | list %}
         {% endif %}
         {% for id in candidates %}
-          {% if states(id) | is_number
+          {% if states(id) | is_number and device_id(id) not in controller_device_ids
                 and (temperature_sensors | count > 0 or device_id(id) not in thermostat_device_ids) %}
             {% set ns.ids = ns.ids + [id] %}
           {% endif %}

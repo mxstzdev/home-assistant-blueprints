@@ -38,7 +38,7 @@ area are used.
 | Input | Key | Default | Description |
 | ----- | --- | ------- | ----------- |
 | Calibration | `calibration` | `false` | See [Calibration](how-it-works.md#calibration) |
-| Temperature sensors | `temperature_sensors` | area: temperature sensors not on a thermostat | |
+| Temperature sensors | `temperature_sensors` | area: temperature sensors not on a thermostat | Sensors of a wall controller are always ignored |
 | Calibration delta | `calibration_delta` | 0.5 °C | Minimum offset change |
 | Calibration timeout | `calibration_timeout` | 5 min | Minimum time between two offset changes per thermostat |
 | Calibration reset | `calibration_reset` | | Resets all offsets to 0 when it turns on |
