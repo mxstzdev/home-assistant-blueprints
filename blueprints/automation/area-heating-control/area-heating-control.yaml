@@ -193,8 +193,9 @@ blueprint:
           description: >
             Makes each thermostat use the area temperature. Thermostats with an external temperature
             input get the area temperature written to it; others get their calibration or offset
-            number adjusted.
-          default: false
+            number adjusted. Skipped while there are neither temperature sensors nor wall
+            controllers.
+          default: true
           selector:
             boolean:
         temperature_sensors:
@@ -251,7 +252,7 @@ blueprint:
           description: >
             Once a week, opens all radiator thermostats fully for one minute to keep the valves from
             sticking. Runs even while heating is off for any reason.
-          default: false
+          default: true
           selector:
             boolean:
         limescale_protection_day:

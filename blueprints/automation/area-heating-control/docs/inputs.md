@@ -41,7 +41,7 @@ area are used.
 
 | Input | Key | Default | Description |
 | ----- | --- | ------- | ----------- |
-| Calibration | `calibration` | `false` | See [Calibration](how-it-works.md#calibration) |
+| Calibration | `calibration` | `true` | See [Calibration](how-it-works.md#calibration) |
 | Temperature sensors | `temperature_sensors` | area: temperature sensors not on a thermostat | Sensors of a wall controller are always ignored |
 | Calibration delta | `calibration_delta` | 0.5 °C | Minimum offset change |
 | Calibration timeout | `calibration_timeout` | 5 min | Minimum time between two offset changes per thermostat |
@@ -51,7 +51,7 @@ area are used.
 
 | Input | Key | Default | Description |
 | ----- | --- | ------- | ----------- |
-| Limescale protection | `limescale_protection` | `false` | Opens all radiator valves for one minute once a week |
+| Limescale protection | `limescale_protection` | `true` | Opens all radiator valves for one minute once a week |
 | Limescale protection day | `limescale_protection_day` | `fri` | `mon` to `sun` |
 | Limescale protection time | `limescale_protection_time` | `12:00:00` | |
 

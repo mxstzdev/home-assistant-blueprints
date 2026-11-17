@@ -95,8 +95,9 @@ it.
 
 ## Behaviour changes
 
-- Calibration now actually writes to the thermostats. It is off by default; enable it with
-  `calibration`.
+- Calibration now actually writes to the thermostats. It is on by default; disable it with
+  `calibration: false`.
+- Limescale protection is on by default; disable it with `limescale_protection: false`.
 - The presence sensor now works and overrides schedules and persons while it detects someone.
 - All selected schedules are used, not only the first one.
 - Window auto-discovery also finds door sensors.

@@ -65,7 +65,7 @@ boost is active, heating off reasons still apply.
 
 ## Calibration
 
-Calibration is off by default. When enabled, every 5 minutes and after a start or reload, each
+Calibration is on by default. Every 5 minutes and after a start or reload, each
 radiator thermostat (and each wall controller, if temperature sensors exist) is made to use the area
 temperature:
 
@@ -85,4 +85,5 @@ temperature:
   the calibration delta and the last change is older than the calibration timeout.
 
 The area temperature is the median of the temperature sensors, or of the wall controllers if there
-are no sensors. Sensors of a wall controller are never used as temperature sensors.
+are no sensors. Sensors of a wall controller are never used as temperature sensors. Without sensors
+and wall controllers, calibration is skipped.
