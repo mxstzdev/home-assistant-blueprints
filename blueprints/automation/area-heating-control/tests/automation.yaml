@@ -59,7 +59,8 @@
       boost_entity: input_button.living_room_boost
       boost_duration:
         minutes: 20
-      outdoor_temperature_entity: weather.home
+      outdoor_temperature_entity: sensor.outdoor_temperature
+      outdoor_weather_entity: weather.home
       outdoor_cutoff_temperature: 17
       outdoor_cutoff_hysteresis: 1.5
       heating_system: binary_sensor.boiler_heating

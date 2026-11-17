@@ -14,7 +14,8 @@ a room and keeps them at the right temperature.
 - 🚶 Presence sensor: comfort while the room is occupied
 - ✈️ Away: vacation mode, or away temperature once nobody has been home for a while
 - 🪟 Windows: heating off, frost protection, or the thermostat's own window handling
-- ♨️ Central heating system and ☀️ outdoor temperature: heating off when it is not needed
+- ♨️ Central heating system and ☀️ outdoor temperature (sensor or weather): heating off when it
+  is not needed
 - 🚀 Boost, using the thermostat's own boost where available
 - 🎛️ Wall controllers: changes on them apply to the whole room
 - 🔒 Read-only thermostats, with the device's child lock where available

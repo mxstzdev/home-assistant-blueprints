@@ -106,7 +106,8 @@ area are used.
 
 | Input | Key | Default | Description |
 | ----- | --- | ------- | ----------- |
-| Outdoor temperature | `outdoor_temperature_entity` | | Temperature sensor or `weather` entity |
+| Outdoor temperature sensor | `outdoor_temperature_entity` | | Temperature sensor, used first |
+| Weather | `outdoor_weather_entity` | | `weather` entity, used while the sensor has no valid value |
 | Outdoor cutoff | `outdoor_cutoff_temperature` | 18 °C | Heating off at or above this temperature |
 | Outdoor hysteresis | `outdoor_cutoff_hysteresis` | 1 °C | Heating resumes below the cutoff minus this value |
 

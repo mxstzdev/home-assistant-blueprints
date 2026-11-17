@@ -16,7 +16,8 @@ blueprint:
     - 🚶 Presence sensor: comfort while the room is occupied
     - ✈️ Away: vacation mode, or away temperature once nobody has been home for a while
     - 🪟 Windows: heating off, frost protection, or the thermostat's own window handling
-    - ♨️ Central heating system and ☀️ outdoor temperature: heating off when it is not needed
+    - ♨️ Central heating system and ☀️ outdoor temperature (sensor or weather): heating off when it
+      is not needed
     - 🚀 Boost, using the thermostat's own boost where available
     - 🎛️ Wall controllers: changes on them apply to the whole room
     - 🔒 Read-only thermostats, with the device's child lock where available
@@ -498,16 +499,25 @@ blueprint:
       collapsed: true
       input:
         outdoor_temperature_entity:
-          name: Outdoor temperature
+          name: Outdoor temperature sensor
           description: >
-            Optional. A temperature sensor or weather entity. Heating is turned off while the outdoor
-            temperature is at or above the cutoff.
+            Optional. Heating is turned off while the outdoor temperature is at or above the cutoff.
+            Takes priority over the weather entity.
           default: []
           selector:
             entity:
               filter:
                 - domain: sensor
                   device_class: temperature
+        outdoor_weather_entity:
+          name: Weather
+          description: >
+            Optional. Its temperature is used while the outdoor temperature sensor is not set or
+            has no valid value.
+          default: []
+          selector:
+            entity:
+              filter:
                 - domain: weather
         outdoor_cutoff_temperature:
           name: Outdoor cutoff
@@ -636,6 +646,7 @@ trigger_variables:
   boost_entity: !input boost_entity
   boost_duration: !input boost_duration
   outdoor_temperature_entity: !input outdoor_temperature_entity
+  outdoor_weather_entity: !input outdoor_weather_entity
   outdoor_cutoff_temperature: !input outdoor_cutoff_temperature
   outdoor_cutoff_hysteresis: !input outdoor_cutoff_hysteresis
   heating_system: !input heating_system
@@ -692,16 +703,24 @@ triggers:
 
   - trigger: template
     value_template: >
-      {% set e = outdoor_temperature_entity %}
-      {% set t = (state_attr(e, 'temperature') if e.startswith('weather.') else states(e)) | float(none)
-           if e is string and e != '' else none %}
+      {% set ns = namespace(t=none) %}
+      {% for e in [outdoor_temperature_entity, outdoor_weather_entity]
+            if e is string and e != '' and ns.t is none %}
+        {% set ns.t = (state_attr(e, 'temperature') if e.startswith('weather.') else states(e))
+             | float(none) %}
+      {% endfor %}
+      {% set t = ns.t %}
       {{ t is not none and t >= outdoor_cutoff_temperature }}
     id: reconcile_outdoor_warm
   - trigger: template
     value_template: >
-      {% set e = outdoor_temperature_entity %}
-      {% set t = (state_attr(e, 'temperature') if e.startswith('weather.') else states(e)) | float(none)
-           if e is string and e != '' else none %}
+      {% set ns = namespace(t=none) %}
+      {% for e in [outdoor_temperature_entity, outdoor_weather_entity]
+            if e is string and e != '' and ns.t is none %}
+        {% set ns.t = (state_attr(e, 'temperature') if e.startswith('weather.') else states(e))
+             | float(none) %}
+      {% endfor %}
+      {% set t = ns.t %}
       {{ t is not none and t < outdoor_cutoff_temperature - outdoor_cutoff_hysteresis }}
     id: reconcile_outdoor_cold
 
@@ -897,9 +916,9 @@ actions:
         {{ vacation_mode if vacation_mode is string and vacation_mode != '' else none }}
       boost_entity_id: >
         {{ boost_entity if boost_entity is string and boost_entity != '' else none }}
-      outdoor_entity_id: >
-        {{ outdoor_temperature_entity if outdoor_temperature_entity is string
-           and outdoor_temperature_entity != '' else none }}
+      outdoor_entity_ids: >
+        {{ [outdoor_temperature_entity, outdoor_weather_entity]
+           | select('string') | reject('eq', '') | list }}
       heating_system_id: >
         {{ heating_system if heating_system is string and heating_system != '' else none }}
 
@@ -1136,14 +1155,14 @@ actions:
         {% endfor %}
         {{ ns.open }}
 
+      # The sensor comes first; the weather entity is used while the sensor has no valid value.
       outdoor_temperature: >
-        {% if outdoor_entity_id is none %}
-          {{ none }}
-        {% elif outdoor_entity_id.startswith('weather.') %}
-          {{ state_attr(outdoor_entity_id, 'temperature') | float(none) }}
-        {% else %}
-          {{ states(outdoor_entity_id) | float(none) }}
-        {% endif %}
+        {% set ns = namespace(t=none) %}
+        {% for id in outdoor_entity_ids if ns.t is none %}
+          {% set ns.t = (state_attr(id, 'temperature') if id.startswith('weather.') else states(id))
+               | float(none) %}
+        {% endfor %}
+        {{ ns.t }}
       # Inside the hysteresis band the current state is kept: the area counts as warm outside
       # while its thermostats are off.
       outdoor_warm: >
