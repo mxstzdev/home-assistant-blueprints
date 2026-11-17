@@ -46,8 +46,8 @@ detection (`detection`, `feature`, `function`, `enable`) are not used.
 A change counts as manual when no automation made it: on the device itself or in the Home Assistant
 UI. Changes that match the area target, such as a device confirming a command, are ignored.
 
-| Setting | Radiator thermostats | Wall controllers |
-| ------- | -------------------- | ---------------- |
+| Input mode | Radiator thermostats | Wall controllers |
+| ---------- | -------------------- | ---------------- |
 | Ignore | Kept until the next change in the area (default) | |
 | Read-only | Reverted at once | Reverted at once |
 | Temporary | Kept for the hold duration or until the next change in the area | All thermostats follow it until the next change in the area (default) |
