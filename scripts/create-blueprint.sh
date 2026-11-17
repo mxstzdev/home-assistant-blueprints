@@ -15,6 +15,8 @@ readonly REPO="home-assistant-blueprints"
 readonly GITHUB_URL="https://github.com/${OWNER}/${REPO}"
 readonly MY_HA_URL="https://my.home-assistant.io"
 readonly IMPORT_BADGE="${MY_HA_URL}/badges/blueprint_import.svg"
+readonly KOFI_URL="https://ko-fi.com/${OWNER}"
+readonly BLUEPRINTS_MENU="Settings → Automations & Scenes → Blueprints"
 readonly INITIAL_VERSION="0.1.0"
 readonly DEFAULT_DOMAIN="automation"
 readonly DEFAULT_MIN_VERSION="2025.1.0"
@@ -34,14 +36,14 @@ err() {
 }
 
 #######################################
-# Turns a snake_case name into a title, e.g. motion_light -> Motion light.
+# Turns a kebab-case name into a title, e.g. motion-light -> Motion light.
 # Arguments:
 #   Blueprint name.
 # Outputs:
 #   Writes the title to STDOUT.
 #######################################
 to_title() {
-  local title="${1//_/ }"
+  local title="${1//-/ }"
   echo "${title^}"
 }
 
@@ -58,24 +60,56 @@ url_encode() {
 }
 
 #######################################
-# Writes the blueprint YAML file.
+# Prints the License, Version and Home Assistant badges, one per line.
+# The Version badge uses the static endpoint because release-please would read
+# the "-blue" of "version-X.Y.Z-blue" as a prerelease suffix.
 # Globals:
 #   INITIAL_VERSION
+# Arguments:
+#   License link, CHANGELOG link, min_version.
+# Outputs:
+#   Writes the badges to STDOUT.
+#######################################
+badges() {
+  local license_url="$1" changelog_url="$2" min_version="$3"
+  local shields="https://img.shields.io"
+
+  echo "[![License](${shields}/badge/license-MIT-blue)](${license_url})"
+  echo "[![Version](${shields}/static/v1?label=version&message=${INITIAL_VERSION}&color=blue)](${changelog_url})" \
+    "<!-- x-release-please-version -->"
+  echo "[![Home Assistant](${shields}/badge/Home%20Assistant-%E2%89%A5%20${min_version}-41BDF5?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/)"
+}
+
+#######################################
+# Writes the blueprint YAML file.
+# Globals:
+#   GITHUB_URL
+#   KOFI_URL
 #   OWNER
 # Arguments:
-#   Target file, domain, name, title, source URL, min_version.
+#   Target file, domain, name, title, source URL, package path, min_version.
 #######################################
 write_blueprint() {
   local file="$1" domain="$2" name="$3" title="$4" source_url="$5"
-  local min_version="$6"
+  local path="$6" min_version="$7"
+  local badge_lines
+  badge_lines="$(badges "${GITHUB_URL}/blob/main/LICENSE" \
+    "${GITHUB_URL}/blob/main/${path}/CHANGELOG.md" "${min_version}" \
+    | sed 's/^/    /')"
 
   cat > "${file}" <<EOF
 blueprint:
   name: ${title}
+  # yamllint disable rule:line-length
   description: |
+${badge_lines}
+
     TODO: Describe what the blueprint does.
 
-    **Version:** ${INITIAL_VERSION} <!-- x-release-please-version -->
+    [Documentation](${GITHUB_URL}/tree/main/${path})
+
+    [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](${KOFI_URL})
+  # yamllint enable rule:line-length
   domain: ${domain}
   author: ${OWNER}
   source_url: ${source_url}
@@ -140,21 +174,20 @@ write_fixture() {
 #######################################
 # Writes the blueprint README.md.
 # Globals:
+#   BLUEPRINTS_MENU
 #   IMPORT_BADGE
-#   INITIAL_VERSION
 # Arguments:
-#   Target file, title, import URL, min_version.
+#   Target file, domain, title, source URL, import URL, min_version.
 #######################################
 write_readme() {
-  local file="$1" title="$2" import_url="$3" min_version="$4"
-  local badges="https://img.shields.io/badge"
+  local file="$1" domain="$2" title="$3" source_url="$4" import_url="$5"
+  local min_version="$6"
+  local fence='```'
 
   cat > "${file}" <<EOF
 # ${title}
 
-[![Version](${badges}/version-${INITIAL_VERSION}-blue)](CHANGELOG.md) <!-- x-release-please-version -->
-[![Home Assistant](${badges}/Home%20Assistant-%E2%89%A5%20${min_version}-41BDF5?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/)
-[![Import](${IMPORT_BADGE})](${import_url})
+$(badges ../../../LICENSE CHANGELOG.md "${min_version}")
 
 TODO: Describe what the blueprint does.
 
@@ -162,15 +195,45 @@ TODO: Describe what the blueprint does.
 
 - Home Assistant ${min_version} or newer
 
+## Installation
+
+1. Import the blueprint:
+
+   [![Import](${IMPORT_BADGE})](${import_url})
+
+   Or, in Home Assistant, go to **${BLUEPRINTS_MENU} → Import Blueprint**
+   and paste this URL:
+
+   ${fence}text
+   ${source_url}
+   ${fence}
+
+2. Open **${title}** in the blueprint list and click **Create ${domain}**.
+3. Fill in the inputs; see [Inputs](#inputs).
+
+## Updating
+
+1. In **${BLUEPRINTS_MENU}**, open the menu (⋮) of **${title}**
+   and choose **Re-import blueprint**.
+2. Confirm overwriting the existing file. Your ${domain}s use the new version right away.
+
+> [!NOTE]
+> The installed version is shown in the Version badge at the top of the blueprint's
+> description.
+
+> [!WARNING]
+> Major versions can rename or remove inputs. Read the [CHANGELOG.md](CHANGELOG.md) before updating
+> across a major version.
+
 ## Inputs
 
 | Input | Description | Default |
 | ----- | ----------- | ------- |
 | Entity | TODO | |
 
-## Changelog
+## License
 
-See [CHANGELOG.md](CHANGELOG.md).
+[MIT](../../../LICENSE)
 EOF
 }
 
@@ -235,8 +298,8 @@ main() {
   fi
   local -r name="$1"
 
-  if [[ ! "${name}" =~ ^[a-z][a-z0-9_]*$ ]]; then
-    err "name must be lowercase snake_case, got '${name}'"
+  if [[ ! "${name}" =~ ^[a-z][a-z0-9]*(-[a-z0-9]+)*$ ]]; then
+    err "name must be lowercase kebab-case, got '${name}'"
     exit 1
   fi
   if [[ "${domain}" != "automation" && "${domain}" != "script" ]]; then
@@ -254,13 +317,20 @@ main() {
 
   local -r path="blueprints/${domain}/${name}"
   local -r dir="${ROOT_DIR}/${path}"
-  if [[ -e "${dir}" ]]; then
-    err "${path} already exists"
-    exit 1
-  fi
-  if jq -e --arg path "${path}" '.packages | has($path)' \
+  # The name is the release-please component and tag prefix, so it must be
+  # unique across domains.
+  local existing
+  for existing in "${ROOT_DIR}"/blueprints/*/"${name}"; do
+    if [[ -e "${existing}" ]]; then
+      err "${existing#"${ROOT_DIR}/"} already exists; names must be unique" \
+        "across domains"
+      exit 1
+    fi
+  done
+  if jq -e --arg path "${path}" --arg name "${name}" \
+    '.packages | has($path) or any(.[]; .component == $name)' \
     "${RELEASE_CONFIG}" > /dev/null; then
-    err "${path} is already registered in release-please-config.json"
+    err "${name} is already registered in release-please-config.json"
     exit 1
   fi
 
@@ -272,17 +342,19 @@ main() {
 
   mkdir -p "${dir}/tests"
   write_blueprint "${dir}/${name}.yaml" "${domain}" "${name}" "${title}" \
-    "${source_url}" "${min_version}"
+    "${source_url}" "${path}" "${min_version}"
   write_fixture "${dir}/tests/${domain}.yaml" "${domain}" "${name}"
-  write_readme "${dir}/README.md" "${title}" "${import_url}" "${min_version}"
+  write_readme "${dir}/README.md" "${domain}" "${title}" "${source_url}" \
+    "${import_url}" "${min_version}"
   write_changelog "${dir}/CHANGELOG.md"
   register_package "${path}" "${name}"
 
   echo "Created ${path} and registered it in release-please-config.json."
-  echo "Add this row to the table in README.md:"
+  local section
+  section="$(to_title "${domain}")s"
+  echo "Add this row to the table under '### ${section}' in README.md:"
   echo
-  echo "| [${title}](${path}) | ${domain} | TODO |" \
-    "[![Import](${IMPORT_BADGE})](${import_url}) |"
+  echo "| [${title}](${path}) | TODO |"
 }
 
 main "$@"

@@ -1,0 +1,30 @@
+# OS (macOS, Windows, Linux)
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+*~
+.directory
+.Trash-*
+.nfs*
+
+# IDEs and editors
+.vscode/
+*.code-workspace
+.history/
+*.vsix
+.idea/
+.fleet/
+.zed/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo

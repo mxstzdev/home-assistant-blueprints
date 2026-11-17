@@ -59,11 +59,11 @@ jobs:
         ha: [min, stable]
     steps:
       - uses: actions/checkout@v5
-      - run: bash scripts/create-blueprint.sh -d "$DOMAIN" scaffold_check
+      - run: bash scripts/create-blueprint.sh -d "$DOMAIN" scaffold-check
         env:
           DOMAIN: ${{ matrix.domain }}
       - run: pipx run --spec yamllint==1.37.1 yamllint --strict --format github blueprints
-      - run: bash scripts/validate-blueprint.sh "blueprints/$DOMAIN/scaffold_check" "$HA"
+      - run: bash scripts/validate-blueprint.sh "blueprints/$DOMAIN/scaffold-check" "$HA"
         env:
           DOMAIN: ${{ matrix.domain }}
           HA: ${{ matrix.ha }}

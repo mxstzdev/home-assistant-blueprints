@@ -4,7 +4,7 @@ SHELL := /bin/bash
 .SHELLFLAGS := -euo pipefail -c
 .DEFAULT_GOAL := help
 
-# Validate only this blueprint folder, e.g. blueprints/automation/motion_light.
+# Validate only this blueprint folder, e.g. blueprints/automation/motion-light.
 BLUEPRINT ?=
 # Home Assistant versions to validate against: min, stable or X.Y.Z.
 HA ?= min stable
