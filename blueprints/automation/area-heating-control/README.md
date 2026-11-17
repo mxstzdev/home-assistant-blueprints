@@ -32,7 +32,7 @@ a room and keeps them at the right temperature.
 
 1. Import the blueprint:
 
-   [![Import](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/create-link/?redirect=blueprint_import&blueprint_url=https%3A%2F%2Fgithub.com%2Fmxstzdev%2Fhome-assistant-blueprints%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Farea-heating-control%2Farea-heating-control.yaml)
+   [![Import](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fmxstzdev%2Fhome-assistant-blueprints%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Farea-heating-control%2Farea-heating-control.yaml)
 
    Or, in Home Assistant, go to **Settings → Automations & Scenes → Blueprints → Import Blueprint**
    and paste this URL:
