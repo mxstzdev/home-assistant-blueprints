@@ -111,9 +111,15 @@ in manifest mode. Each blueprint folder is its own package:
 - release-please opens one release pull request per blueprint. Merging it bumps the
   version line in the blueprint and the version badge in its README, updates its
   `CHANGELOG.md`, and creates the tag `<name>-X.Y.Z` with a GitHub release.
-- Versions follow [SemVer](https://semver.org/) and start at `0.1.0`. `fix:` bumps
-  patch and `feat:` bumps minor. A breaking change (`feat!:` or a `BREAKING CHANGE:`
-  footer) bumps minor while below `1.0.0` and major from then on.
+- Versions follow [SemVer](https://semver.org/) and start at `0.1.0`. `feat:` bumps
+  minor; `fix:`, `refactor:`, `perf:`, `deps:` and `revert:` bump patch. A breaking change
+  (`feat!:` or a `BREAKING CHANGE:` footer) bumps minor while below `1.0.0` and major from
+  then on.
+- Changelogs follow [Keep a Changelog](https://keepachangelog.com/) sections: `feat:` is
+  listed under *Added*; `refactor:`, `perf:`, `deps:` and `revert:` under *Changed*; `fix:`
+  under *Fixed*. Other types are not listed and do not trigger a release.
+- A squash-merged pull request can carry several changelog entries: add one Conventional
+  Commit line per extra entry at the bottom of the squash commit message.
 
 Commit messages (or squash-merge titles) must follow
 [Conventional Commits](https://www.conventionalcommits.org/), for example
