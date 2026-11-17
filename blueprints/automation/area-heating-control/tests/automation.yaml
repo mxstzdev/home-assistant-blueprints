@@ -1,0 +1,74 @@
+- alias: Area heating control (minimal)
+  use_blueprint:
+    path: mxstzdev/area-heating-control.yaml
+    input:
+      area: living_room
+
+- alias: Area heating control (all inputs)
+  use_blueprint:
+    path: mxstzdev/area-heating-control.yaml
+    input:
+      area: living_room
+      comfort_temperature: 21.5
+      comfort_temperature_entity: input_number.living_room_comfort
+      eco_temperature: 18
+      eco_temperature_entity: input_number.living_room_eco
+      away_temperature: 16
+      away_temperature_entity: input_number.living_room_away
+      valves:
+        - climate.living_room_radiator
+      valve_behaviour: temporary
+      valve_hold_duration:
+        hours: 1
+      controllers:
+        - climate.living_room_wall
+      controller_behaviour: persistent
+      calibration: true
+      temperature_sensors:
+        - sensor.living_room_temperature
+      calibration_delta: 0.3
+      calibration_timeout:
+        minutes: 10
+      calibration_reset: input_boolean.living_room_calibration_reset
+      limescale_protection: true
+      limescale_protection_day: mon
+      limescale_protection_time: "11:30:00"
+      windows:
+        - binary_sensor.living_room_window
+      window_behaviour: native
+      window_frost_protection_temperature: 7
+      window_open_delay:
+        seconds: 30
+      window_close_delay:
+        minutes: 2
+      schedules:
+        - schedule.living_room
+      presence_sensor: binary_sensor.living_room_occupancy
+      presence_on_delay:
+        minutes: 2
+      presence_off_delay:
+        minutes: 10
+      persons:
+        - person.alice
+      person_arrive_delay:
+        minutes: 2
+      person_leave_delay:
+        minutes: 5
+      guest_mode: input_boolean.guest_mode
+      vacation_mode: input_boolean.vacation
+      away_delay:
+        hours: 12
+      boost_entity: input_button.living_room_boost
+      boost_duration:
+        minutes: 20
+      outdoor_temperature_entity: weather.home
+      outdoor_cutoff_temperature: 17
+      outdoor_cutoff_hysteresis: 1.5
+      heating_system: binary_sensor.boiler_heating
+      heating_system_delay:
+        minutes: 3
+      action_delay:
+        seconds: 1
+      startup_delay:
+        seconds: 30
+      log_level: debug

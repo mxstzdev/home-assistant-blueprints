@@ -12,7 +12,7 @@ Each blueprint is versioned and released independently.
 
 | Blueprint | Description |
 | --------- | ----------- |
-| _None yet_ | |
+| [Area Heating Control](blueprints/automation/area-heating-control) | Area based heating with comfort, eco and away levels, windows, boost and calibration |
 
 ## Installation
 

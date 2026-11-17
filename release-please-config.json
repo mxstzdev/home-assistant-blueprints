@@ -7,5 +7,20 @@
   "separate-pull-requests": true,
   "initial-version": "0.1.0",
   "bump-minor-pre-major": true,
-  "packages": {}
+  "packages": {
+    "blueprints/automation/area-heating-control": {
+      "component": "area-heating-control",
+      "initial-version": "2.0.0",
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "area-heating-control.yaml"
+        },
+        {
+          "type": "generic",
+          "path": "README.md"
+        }
+      ]
+    }
+  }
 }
