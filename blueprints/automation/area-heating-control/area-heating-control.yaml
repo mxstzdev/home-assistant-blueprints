@@ -1,5 +1,5 @@
 blueprint:
-  name: Area Heating Control
+  name: Area Heating Control 2.0
   # yamllint disable rule:line-length
   description: |
     [![License](https://img.shields.io/badge/license-MIT-blue)](https://github.com/mxstzdev/home-assistant-blueprints/blob/main/LICENSE)
