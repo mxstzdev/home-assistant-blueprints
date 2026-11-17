@@ -87,7 +87,7 @@ to the whole area until then. While heating is off, changes on wall controllers 
 
 ### Calibration does not write anything
 
-- **Calibration is off.** It is disabled by default.
+- **Calibration is off.** It is enabled by default; check that it was not turned off.
 - **No calibration entity was found.** The thermostat's device needs an external temperature input
   or a `calibration` or `offset` number, see [Calibration](how-it-works.md#calibration). Entities are
   recognised by their entity id. If yours uses a different name, rename the entity id so that it

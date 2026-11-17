@@ -137,7 +137,7 @@ thermostats follow. To see why the area chose a temperature, enable the debug lo
 
 ## Next steps
 
-- Enable **Calibration** if the thermostats measure a different temperature than the room sensors,
+- Check **Calibration**, which is on by default and uses the room sensors or the wall controllers,
   see [Calibration](how-it-works.md#calibration).
-- Enable **Limescale protection** for radiator valves that stay closed for long periods.
+- Check **Limescale protection**, which is on by default, and pick a day and time that suit you.
 - Choose a **Window open behaviour**, see [Windows](how-it-works.md#windows).
