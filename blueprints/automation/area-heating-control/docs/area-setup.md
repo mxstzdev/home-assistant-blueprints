@@ -37,9 +37,9 @@ the automation:
 | `input_number.living_room_eco` | 15 to 25 °C, step 0.5 | Eco temperature entity |
 | `input_number.living_room_away` | 5 to 20 °C, step 0.5 | Away temperature entity |
 
-Helpers can be shared: one `input_number.home_away` for all areas is a common choice. With wall
-controller or radiator thermostat changes set to *Persistent*, changes on the thermostats are
-written back to these helpers.
+Helpers can be shared: one `input_number.home_away` for all areas is a common choice. With the
+wall controller input mode set to *Persistent*, changes on the wall controllers are written back to
+these helpers.
 
 ### Schedules
 

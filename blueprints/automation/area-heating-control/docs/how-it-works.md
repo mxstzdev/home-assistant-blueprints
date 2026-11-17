@@ -48,10 +48,9 @@ UI. Changes that match the area target, such as a device confirming a command, a
 
 | Input mode | Radiator thermostats | Wall controllers |
 | ---------- | -------------------- | ---------------- |
-| Ignore | Kept until the next change in the area (default) | |
+| Temporary | Kept until the next change in the area (default) | All thermostats follow it until the next change in the area (default) |
 | Read-only | Reverted at once | Reverted at once |
-| Temporary | Kept for the hold duration or until the next change in the area | All thermostats follow it until the next change in the area (default) |
-| Persistent | Written to the active comfort, eco or away entity | Written to the active comfort, eco or away entity |
+| Persistent | | Written to the active comfort, eco or away entity |
 
 "Persistent" falls back to "Temporary" if the active level has no entity. While heating is off,
 changes on wall controllers are reverted. A change in the area is any event the blueprint reacts

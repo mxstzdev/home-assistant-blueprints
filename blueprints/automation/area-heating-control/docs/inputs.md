@@ -28,8 +28,7 @@ area are used.
 | Input | Key | Default | Description |
 | ----- | --- | ------- | ----------- |
 | Radiator thermostats | `valves` | area: single target temperature | |
-| Radiator thermostat input mode | `valve_behaviour` | `ignore` | `ignore`, `readonly`, `temporary` or `persistent`, see [Changes on thermostats](how-it-works.md#changes-on-thermostats) |
-| Radiator thermostat hold duration | `valve_hold_duration` | 30 min | How long a temporary change is kept |
+| Radiator thermostat input mode | `valve_behaviour` | `temporary` | `temporary` or `readonly`, see [Changes on thermostats](how-it-works.md#changes-on-thermostats) |
 
 ## Wall controllers
 
