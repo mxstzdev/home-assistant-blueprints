@@ -115,8 +115,8 @@ blueprint:
                 - domain: input_number
 
     thermostat_section:
-      name: Thermostats
-      icon: mdi:thermostat
+      name: Radiator thermostats
+      icon: mdi:radiator
       collapsed: true
       input:
         valves:
@@ -158,6 +158,12 @@ blueprint:
             minutes: 30
           selector:
             duration:
+
+    controller_section:
+      name: Wall controllers
+      icon: mdi:thermostat
+      collapsed: true
+      input:
         controllers:
           name: Wall controllers
           description: >
