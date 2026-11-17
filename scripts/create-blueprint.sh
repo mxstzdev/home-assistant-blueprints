@@ -60,21 +60,20 @@ url_encode() {
 }
 
 #######################################
-# Prints the License, Version and Home Assistant badges, one per line.
+# Prints the Version and Home Assistant badges, one per line.
 # The Version badge uses the static endpoint because release-please would read
 # the "-blue" of "version-X.Y.Z-blue" as a prerelease suffix.
 # Globals:
 #   INITIAL_VERSION
 # Arguments:
-#   License link, CHANGELOG link, min_version.
+#   CHANGELOG link, min_version.
 # Outputs:
 #   Writes the badges to STDOUT.
 #######################################
 badges() {
-  local license_url="$1" changelog_url="$2" min_version="$3"
+  local changelog_url="$1" min_version="$2"
   local shields="https://img.shields.io"
 
-  echo "[![License](${shields}/badge/license-MIT-blue)](${license_url})"
   echo "[![Version](${shields}/static/v1?label=version&message=${INITIAL_VERSION}&color=blue)](${changelog_url})" \
     "<!-- x-release-please-version -->"
   echo "[![Home Assistant](${shields}/badge/Home%20Assistant-%E2%89%A5%20${min_version}-41BDF5?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/)"
@@ -93,8 +92,8 @@ write_blueprint() {
   local file="$1" domain="$2" name="$3" title="$4" source_url="$5"
   local path="$6" min_version="$7"
   local badge_lines
-  badge_lines="$(badges "${GITHUB_URL}/blob/main/LICENSE" \
-    "${GITHUB_URL}/blob/main/${path}/CHANGELOG.md" "${min_version}" \
+  badge_lines="$(badges "${GITHUB_URL}/blob/main/${path}/CHANGELOG.md" \
+    "${min_version}" \
     | sed 's/^/    /')"
 
   cat > "${file}" <<EOF
@@ -106,7 +105,7 @@ ${badge_lines}
 
     TODO: Describe what the blueprint does.
 
-    [Documentation](${GITHUB_URL}/tree/main/${path})
+    [Documentation](${GITHUB_URL}/tree/main/${path}) · [Changelog](${GITHUB_URL}/blob/main/${path}/CHANGELOG.md)
 
     [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](${KOFI_URL})
   # yamllint enable rule:line-length
@@ -187,7 +186,7 @@ write_readme() {
   cat > "${file}" <<EOF
 # ${title}
 
-$(badges ../../../LICENSE CHANGELOG.md "${min_version}")
+$(badges CHANGELOG.md "${min_version}")
 
 TODO: Describe what the blueprint does.
 

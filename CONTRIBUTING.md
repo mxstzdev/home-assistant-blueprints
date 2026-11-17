@@ -43,14 +43,14 @@ scripts/                    # helpers used by make and CI
    creating that sub-heading and table if this is the domain's first blueprint.
 2. Replace every `TODO` in the blueprint, its README and `tests/<domain>.yaml`.
 3. Keep these conventions when editing:
-   - The `description` and the README both start with the License, Version and Home
-     Assistant badges; the `description` uses absolute GitHub links, since relative
-     ones do not resolve in Home Assistant. release-please updates both Version badges
-     on each release; keep the `<!-- x-release-please-version -->` comment and nothing
-     else versioned on those lines.
-   - The `description` ends with the Documentation link (the blueprint's folder on
-     GitHub) and the Ko-fi button. Keep the `yamllint` comments around it, as the badge
-     lines exceed the line length.
+   - The `description` and the README both start with the Version and Home Assistant
+     badges; the `description` uses absolute GitHub links, since relative ones do not
+     resolve in Home Assistant. release-please updates both Version badges on each
+     release; keep the `<!-- x-release-please-version -->` comment and nothing else
+     versioned on those lines.
+   - The `description` ends with the Documentation and Changelog links (the blueprint's
+     folder and its `CHANGELOG.md` on GitHub) and the Ko-fi button. Keep the `yamllint`
+     comments around it, as the badge lines exceed the line length.
    - The README keeps the generated Installation (with the Import button), Updating
      and License sections. `CHANGELOG.md` is linked from the Version badge and the
      Updating section, so it needs no section of its own.
@@ -77,7 +77,9 @@ Every pull request and push to `main` runs:
   against the current stable Home Assistant release. The blueprint and its
   `tests/<domain>.yaml` are loaded into a minimal configuration inside the official
   container image, so schema errors, invalid triggers, conditions or actions, missing
-  inputs, and features newer than `min_version` all fail the build.
+  inputs, and features newer than `min_version` all fail the build. An import round trip
+  then saves the blueprint the way the Import button does and loads it again, which
+  catches selector options that Home Assistant cannot read back after an import.
 - **Scaffold check**: a throwaway blueprint from `scripts/create-blueprint.sh` for each
   domain must pass yamllint and check_config, so the skeleton never drifts from these
   conventions.

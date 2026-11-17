@@ -1,6 +1,6 @@
 # Area Heating Control
 
-[![License](https://img.shields.io/badge/license-MIT-blue)](../../../LICENSE) [![Version](https://img.shields.io/static/v1?label=version&message=2.1.0&color=blue)](CHANGELOG.md) [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-%E2%89%A5%202025.1.0-41BDF5?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/) <!-- x-release-please-version -->
+[![Version](https://img.shields.io/static/v1?label=version&message=2.1.0&color=blue)](CHANGELOG.md) [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-%E2%89%A5%202025.1.0-41BDF5?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/) <!-- x-release-please-version -->
 
 Area based heating control. It uses Home Assistant's
 [areas](https://www.home-assistant.io/docs/organizing/areas/) to find the thermostats and sensors of
