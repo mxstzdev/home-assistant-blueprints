@@ -41,7 +41,7 @@ a room and keeps them at the right temperature.
    https://github.com/mxstzdev/home-assistant-blueprints/blob/main/blueprints/automation/area-heating-control/area-heating-control.yaml
    ```
 
-2. Open **Area Heating Control** in the blueprint list and click **Create automation**.
+2. Open **Area Heating Control 2.0** in the blueprint list and click **Create automation**.
 3. Select the area. Everything else is optional; see [Inputs](docs/inputs.md).
 4. Create one automation per area.
 
@@ -50,7 +50,7 @@ sensors to create.
 
 ## Updating
 
-1. In **Settings → Automations & Scenes → Blueprints**, open the menu (⋮) of **Area Heating Control**
+1. In **Settings → Automations & Scenes → Blueprints**, open the menu (⋮) of **Area Heating Control 2.0**
    and choose **Re-import blueprint**.
 2. Confirm overwriting the existing file. Your automations use the new version right away.
 

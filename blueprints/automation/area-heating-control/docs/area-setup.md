@@ -96,7 +96,7 @@ template:
 
 ## 4. Create the automation
 
-1. Go to **Settings → Automations & Scenes → Blueprints**, open **Area Heating Control** and click
+1. Go to **Settings → Automations & Scenes → Blueprints**, open **Area Heating Control 2.0** and click
    **Create automation**.
 2. Select the area.
 3. Open the sections you need and select the helpers and sensors from steps 2 and 3. Leave entity

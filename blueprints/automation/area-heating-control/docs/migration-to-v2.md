@@ -8,7 +8,8 @@ a time.
 
 ## Steps
 
-1. Import the 2.0 blueprint, see [Installation](../README.md#installation).
+1. Import the 2.0 blueprint, see [Installation](../README.md#installation). It is listed as
+   **Area Heating Control 2.0**, next to the 1.x **Area Heating Control**.
 2. Open an automation that uses 1.x, open the menu (⋮) and choose **Edit in YAML**.
 3. Change `use_blueprint.path` to `mxstzdev/area-heating-control.yaml`.
 4. Rename the inputs as listed in [Input mapping](#input-mapping). Inputs you never set can be
