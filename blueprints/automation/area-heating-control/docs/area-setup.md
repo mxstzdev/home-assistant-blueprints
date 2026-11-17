@@ -78,8 +78,9 @@ that long, for example 4 hours.
 
 ### Outdoor temperature
 
-Select an outdoor temperature sensor or a `weather` entity to turn heating off on warm days. With
-the defaults, heating stops at 18 °C outside and resumes below 17 °C.
+Select an outdoor temperature sensor, a `weather` entity, or both, to turn heating off on warm
+days. The sensor is used first, the weather entity while the sensor has no valid value. With the
+defaults, heating stops at 18 °C outside and resumes below 17 °C.
 
 ### Heating system
 
@@ -126,7 +127,7 @@ use_blueprint:
     away_delay:
       hours: 4
     boost_entity: input_button.living_room_boost
-    outdoor_temperature_entity: weather.home
+    outdoor_weather_entity: weather.home
 ```
 
 ## 5. Check the result

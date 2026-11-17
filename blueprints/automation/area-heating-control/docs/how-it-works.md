@@ -8,7 +8,8 @@ preset differs from the wanted state. In order of priority:
 2. **Heating off**, for the first reason that applies:
    - the heating system is off;
    - it is warm outside: the outdoor temperature is at or above the cutoff. Heating resumes once it
-     drops below the cutoff minus the hysteresis; in between, the current state is kept;
+     drops below the cutoff minus the hysteresis; in between, the current state is kept. The outdoor
+     temperature sensor is used first, the weather entity while the sensor has no valid value;
    - a wall controller was turned off: the whole area stays off until it is turned on again;
    - a window is open, handled as set in *Window open behaviour* (see below).
 
