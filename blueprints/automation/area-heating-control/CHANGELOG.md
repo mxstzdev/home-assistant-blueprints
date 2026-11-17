@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/mxstzdev/home-assistant-blueprints/compare/area-heating-control-2.1.0...area-heating-control-2.1.1) (2026-11-17)
+
+
+### Fixed
+
+* **area-heating-control:** remove supported_features filters that break import ([#8](https://github.com/mxstzdev/home-assistant-blueprints/issues/8)) ([221b99b](https://github.com/mxstzdev/home-assistant-blueprints/commit/221b99be31218123a8fb433f4db052c7f5811c2b))
+
 ## [2.1.0](https://github.com/mxstzdev/home-assistant-blueprints/compare/area-heating-control-2.0.1...area-heating-control-2.1.0) (2026-11-17)
 
 
