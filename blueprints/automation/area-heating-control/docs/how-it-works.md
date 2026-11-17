@@ -84,5 +84,5 @@ temperature:
   clamped and rounded to the entity's range and step. It is only written if it changes by at least
   the calibration delta and the last change is older than the calibration timeout.
 
-The area temperature is the mean of the temperature sensors, or of the wall controllers if there are
-no sensors.
+The area temperature is the median of the temperature sensors, or of the wall controllers if there
+are no sensors. Sensors of a wall controller are never used as temperature sensors.

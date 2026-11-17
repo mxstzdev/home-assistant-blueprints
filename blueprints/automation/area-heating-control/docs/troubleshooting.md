@@ -37,7 +37,7 @@ The event `area_heating_control_event` carries the same information, and can be 
 | `target_temperature` | The temperature the area should have |
 | `area_off_reason` | Why heating is off: `heating_system`, `outdoor`, `controller`, `windows`, or empty |
 | `boost` | Whether a boost is active |
-| `area_temperature` | Mean of the temperature sensors, or of the wall controllers without sensors |
+| `area_temperature` | Median of the temperature sensors, or of the wall controllers without sensors |
 | `valves` / `controllers` | The radiator thermostats and wall controllers in use |
 | `tasks` | The commands sent in this run |
 
