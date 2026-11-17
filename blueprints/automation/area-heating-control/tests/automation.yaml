@@ -18,8 +18,6 @@
       valves:
         - climate.living_room_radiator
       valve_behaviour: temporary
-      valve_hold_duration:
-        hours: 1
       controllers:
         - climate.living_room_wall
       controller_behaviour: persistent

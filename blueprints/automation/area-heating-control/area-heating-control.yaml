@@ -136,28 +136,15 @@ blueprint:
           name: Radiator thermostat input mode
           description: >
             What happens when someone changes the target temperature on a radiator thermostat.
-            **Ignore**: kept until the next change in the area. **Read-only**: reverted at once.
-            **Temporary**: kept for the hold duration or until the next change in the area.
-            **Persistent**: written to the active temperature entity (Temporary without one).
-          default: ignore
+            **Temporary**: kept until the next change in the area. **Read-only**: reverted at once.
+          default: temporary
           selector:
             select:
               options:
-                - label: Ignore
-                  value: ignore
-                - label: Read-only
-                  value: readonly
                 - label: Temporary
                   value: temporary
-                - label: Persistent
-                  value: persistent
-        valve_hold_duration:
-          name: Radiator thermostat hold duration
-          description: How long a temporary change on a radiator thermostat is kept.
-          default:
-            minutes: 30
-          selector:
-            duration:
+                - label: Read-only
+                  value: readonly
 
     controller_section:
       name: Wall controllers
@@ -618,7 +605,6 @@ trigger_variables:
   away_temperature_entity: !input away_temperature_entity
   valves: !input valves
   valve_behaviour: !input valve_behaviour
-  valve_hold_duration: !input valve_hold_duration
   controllers: !input controllers
   controller_behaviour: !input controller_behaviour
   calibration: !input calibration
@@ -825,11 +811,6 @@ triggers:
       seconds: 5
     id: valve_setpoint
   - trigger: state
-    entity_id: !input valves
-    attribute: temperature
-    for: !input valve_hold_duration
-    id: valve_hold_expired
-  - trigger: state
     entity_id: !input controllers
     attribute: target_temp_low
     for:
@@ -871,17 +852,15 @@ variables:
   run_reset: "{{ trigger_id == 'calibration_reset' }}"
   run_change: >
     {{ manual_change and (
-         (trigger_id == 'valve_setpoint' and valve_behaviour in ['readonly', 'persistent'])
+         (trigger_id == 'valve_setpoint' and valve_behaviour == 'readonly')
          or (trigger_id == 'controller_setpoint' and trigger.to_state.state == 'heat')
          or trigger_id in ['controller_mode', 'controller_preset']) }}
-  run_hold_expired: >
-    {{ trigger_id == 'valve_hold_expired' and valve_behaviour in ['temporary', 'persistent'] }}
 
 conditions:
   - condition: template
     value_template: >
       {{ trigger_id == 'manual' or trigger_id.startswith('reconcile_')
-         or run_calibrate or run_reset or run_change or run_hold_expired }}
+         or run_calibrate or run_reset or run_change }}
 
 actions:
   - if:
@@ -1264,7 +1243,7 @@ actions:
           {{ none }}
         {% endif %}
       run_reconcile: >
-        {{ trigger_id == 'manual' or trigger_id.startswith('reconcile_') or run_hold_expired
+        {{ trigger_id == 'manual' or trigger_id.startswith('reconcile_')
            or trigger_id in ['controller_mode', 'controller_preset']
            or (change_value is not none and level_write is none
                and (change_behaviour == 'readonly' or trigger_id == 'controller_setpoint')) }}
