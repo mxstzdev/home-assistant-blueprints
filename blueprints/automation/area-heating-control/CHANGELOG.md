@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/mxstzdev/home-assistant-blueprints/compare/area-heating-control-2.0.0...area-heating-control-2.0.1) (2026-11-17)
+
+
+### Fixed
+
+* **area-heating-control:** ignore wall controller sensors for calibra… ([#3](https://github.com/mxstzdev/home-assistant-blueprints/issues/3)) ([45ff691](https://github.com/mxstzdev/home-assistant-blueprints/commit/45ff6910ba489d3afc64b539c27cdb175df2e8ec))
+
 ## 2.0.0 (2026-11-17)
 
 
