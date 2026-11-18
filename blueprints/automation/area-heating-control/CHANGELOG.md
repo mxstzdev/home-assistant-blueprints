@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.2.0](https://github.com/mxstzdev/home-assistant-blueprints/compare/area-heating-control/2.1.1...area-heating-control/2.2.0) (2026-11-18)
+
+
+### Added
+
+* derive eco, away and boost temperatures from comfort ([069b451](https://github.com/mxstzdev/home-assistant-blueprints/commit/069b451db5777683f43e4a0bb6181f38279645ad))
+
+
+### Changed
+
+* reorganise input sections and feature list ([42bdbc8](https://github.com/mxstzdev/home-assistant-blueprints/commit/42bdbc80f070001c4310a6800882bc0b39ffdcf7))
+
 ## [2.1.1](https://github.com/mxstzdev/home-assistant-blueprints/compare/area-heating-control/2.1.0...area-heating-control/2.1.1) (2026-11-17)
 
 
