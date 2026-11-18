@@ -26,7 +26,7 @@ Each blueprint states the oldest Home Assistant version it supports in its READM
 
 Every blueprint has its own `CHANGELOG.md` and
 [GitHub releases](https://github.com/mxstzdev/home-assistant-blueprints/releases)
-tagged `<name>-X.Y.Z`. The installed version is shown in the Version badge at the top of the
+tagged `<name>/X.Y.Z`. The installed version is shown in the Version badge at the top of the
 blueprint's description. To update, re-import the blueprint and confirm overwriting the existing file.
 
 ## Support

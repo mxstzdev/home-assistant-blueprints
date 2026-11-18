@@ -3,7 +3,7 @@
   "release-type": "simple",
   "include-component-in-tag": true,
   "include-v-in-tag": false,
-  "tag-separator": "-",
+  "tag-separator": "/",
   "separate-pull-requests": true,
   "initial-version": "0.1.0",
   "bump-minor-pre-major": true,
