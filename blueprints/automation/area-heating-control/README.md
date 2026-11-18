@@ -1,12 +1,13 @@
 # Area Heating Control
 
-[![Version](https://img.shields.io/static/v1?label=version&message=2.1.1&color=blue)](CHANGELOG.md) [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-%E2%89%A5%202025.1.0-41BDF5?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/) <!-- x-release-please-version -->
+[![Version](https://img.shields.io/static/v1?label=version&message=2.1.0&color=blue)](CHANGELOG.md) [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-%E2%89%A5%202025.1.0-41BDF5?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/) <!-- x-release-please-version -->
 
 Area based heating control. It uses Home Assistant's
 [areas](https://www.home-assistant.io/docs/organizing/areas/) to find the thermostats and sensors of
 a room and keeps them at the right temperature.
 
-- 🌱 Comfort, eco and away temperatures, static or from `input_number` helpers
+- 🌱 Auto-calculated temperatures: set your comfort temperature, and eco, away and boost follow it
+  (overridable with custom entities)
 - 🗓️ Schedules: comfort while any selected schedule is on
 - 👥 Persons and guest mode: comfort only while somebody is home
 - 🚶 Presence sensor: comfort while the room is occupied
@@ -14,7 +15,7 @@ a room and keeps them at the right temperature.
 - 🪟 Windows: heating off, frost protection, or the thermostat's own window handling
 - ♨️ Central heating system and ☀️ outdoor temperature (sensor or weather): heating off when it
   is not needed
-- 🚀 Boost, using the thermostat's own boost where available
+- 🚀 Boost from a trigger or the wall controller, using the thermostat's own boost where available
 - 🎛️ Wall controllers: changes on them apply to the whole room
 - 🔒 Read-only thermostats, with the device's child lock where available
 - ⚙️ Calibration against external temperature sensors, via the thermostat's external input or

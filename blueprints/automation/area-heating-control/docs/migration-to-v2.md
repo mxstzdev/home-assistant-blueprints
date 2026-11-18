@@ -65,7 +65,7 @@ it.
 | `input_area_id` | `area` |
 | `input_area_temperature_settings_comfort_static` | `comfort_temperature` |
 | `input_area_temperature_settings_comfort_entity` | `comfort_temperature_entity` |
-| `input_area_temperature_settings_eco_static` | `eco_temperature` |
+| `input_area_temperature_settings_eco_static` | removed in 2.2.0: eco is calculated, use `eco_temperature_offset` or `eco_temperature_entity` |
 | `input_area_temperature_settings_eco_entity` | `eco_temperature_entity` |
 | `input_area_thermostat_valves` | `valves` |
 | `input_area_thermostat_controllers` | `controllers` |
@@ -103,8 +103,8 @@ it.
 - Window auto-discovery also finds door sensors.
 - The startup delay postpones changes instead of dropping them.
 - Changes on a wall controller made in the Home Assistant UI now count as well, and by default apply
-  to the whole room until the next change in the area (`controller_behaviour: temporary`). Set it to
-  `persistent` for the 1.x behaviour of writing them to the temperature entity.
+  to the whole room. Since 2.2.0 they are written to the temperature entity by default, as in 1.x
+  (`controller_behaviour: persistent`), and apply until the next change in the area without one.
 - Turning a wall controller off turns the whole area off.
 
 ## New in 2.0

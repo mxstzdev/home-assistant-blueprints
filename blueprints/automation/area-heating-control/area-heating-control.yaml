@@ -2,18 +2,18 @@ blueprint:
   name: Area Heating Control 2.0
   # yamllint disable rule:line-length
   description: |
-    [![Version](https://img.shields.io/static/v1?label=version&message=2.1.1&color=blue)](https://github.com/mxstzdev/home-assistant-blueprints/blob/main/blueprints/automation/area-heating-control/CHANGELOG.md) [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-%E2%89%A5%202025.1.0-41BDF5?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/) <!-- x-release-please-version -->
+    [![Version](https://img.shields.io/static/v1?label=version&message=2.1.0&color=blue)](https://github.com/mxstzdev/home-assistant-blueprints/blob/main/blueprints/automation/area-heating-control/CHANGELOG.md) [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-%E2%89%A5%202025.1.0-41BDF5?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/) <!-- x-release-please-version -->
 
     Area based heating control. It uses Home Assistant's [areas](https://www.home-assistant.io/docs/organizing/areas/) to find the thermostats and sensors of a room and keeps them at the right temperature.
 
-    - 🌱 Comfort, eco and away temperatures, static or from `input_number` helpers
+    - 🌱 Auto-calculated temperatures: set your comfort temperature, and eco, away and boost follow it (overridable with custom entities)
     - 🗓️ Schedules: comfort while any selected schedule is on
     - 👥 Persons and guest mode: comfort only while somebody is home
     - 🚶 Presence sensor: comfort while the room is occupied
     - ✈️ Away: vacation mode, or away temperature once nobody has been home for a while
     - 🪟 Windows: heating off, frost protection, or the thermostat's own window handling
     - ♨️ Central heating system and ☀️ outdoor temperature (sensor or weather): heating off when it is not needed
-    - 🚀 Boost, using the thermostat's own boost where available
+    - 🚀 Boost from a trigger or the wall controller, using the thermostat's own boost where available
     - 🎛️ Wall controllers: changes on them apply to the whole room
     - 🔒 Read-only thermostats, with the device's child lock where available
     - ⚙️ Calibration against external temperature sensors, via the thermostat's external input or its offset
@@ -50,7 +50,7 @@ blueprint:
       input:
         comfort_temperature:
           name: Comfort temperature
-          description: Used while the area should be warm.
+          description: Used while the area should be warm. Eco, away and boost temperatures are calculated from it.
           default: 22
           selector:
             number:
@@ -62,53 +62,77 @@ blueprint:
         comfort_temperature_entity:
           name: Comfort temperature entity
           description: |
-            Optional. An `input_number` that holds the comfort temperature. Overrides the static value above while it has a valid state.
+            Optional, recommended. An `input_number` that holds the comfort temperature. Overrides the static value above while it has a valid state. It lets you change the temperature from a dashboard, and lets *Persistent* wall controllers save changes for every level.
           default: []
           selector:
             entity:
               filter:
                 - domain: input_number
-        eco_temperature:
-          name: Eco temperature
-          description: Used while nobody needs the area to be warm.
-          default: 19
+        eco_temperature_offset:
+          name: Eco offset
+          description: |
+            Used while nobody needs the area to be warm. Eco temperature = comfort temperature minus this offset, but at least 16 °C (to prevent damp and mould) and never above the comfort temperature.
+          default: 3
           selector:
             number:
-              min: 5
-              max: 30
+              min: 0
+              max: 10
               step: 0.5
               mode: box
               unit_of_measurement: °C
         eco_temperature_entity:
           name: Eco temperature entity
           description: |
-            Optional. An `input_number` that holds the eco temperature. Overrides the static value above while it has a valid state.
+            Optional manual override. **Empty:** the eco temperature is calculated from the comfort temperature. **Set:** the value of this `input_number` is used while it has a valid state.
           default: []
           selector:
             entity:
               filter:
                 - domain: input_number
-        away_temperature:
-          name: Away temperature
+        away_temperature_offset:
+          name: Away offset
           description: |
-            Used during vacation mode or after nobody has been home for the away delay, see **Away**.
-          default: 15
+            Used during vacation mode or after nobody has been home for the away delay, see **Away**. Away temperature = comfort temperature minus this offset, but at least 15 °C and never above the comfort temperature.
+          default: 5
           selector:
             number:
-              min: 5
-              max: 30
+              min: 0
+              max: 15
               step: 0.5
               mode: box
               unit_of_measurement: °C
         away_temperature_entity:
           name: Away temperature entity
           description: |
-            Optional. An `input_number` that holds the away temperature. Overrides the static value above while it has a valid state.
+            Optional manual override. **Empty:** the away temperature is calculated from the comfort temperature. **Set:** the value of this `input_number` is used while it has a valid state.
           default: []
           selector:
             entity:
               filter:
                 - domain: input_number
+        boost_temperature_offset:
+          name: Boost offset
+          description: |
+            Used by radiator thermostats that have neither their own boost preset nor a boost switch, see **Boost**. Boost temperature = comfort temperature plus this offset, at most the thermostat's maximum temperature.
+          default: 3
+          selector:
+            number:
+              min: 0.5
+              max: 10
+              step: 0.5
+              mode: box
+              unit_of_measurement: °C
+        frost_protection_temperature:
+          name: Frost protection temperature
+          description: Used while a window is open and the window open behaviour is "Frost protection", see **Windows**. 0 uses each thermostat's minimum temperature.
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 20
+              step: 0.5
+              mode: box
+              unit_of_measurement: °C
 
     thermostat_section:
       name: Radiator thermostats
@@ -167,8 +191,8 @@ blueprint:
 
             - **Read-only:** reverted at once, and the controller's child lock is turned on where available.
             - **Temporary:** all thermostats follow it until the next change in the area.
-            - **Persistent:** written to the active temperature entity, or *Temporary* without one.
-          default: temporary
+            - **Persistent** (default): saved as the new temperature of the active level. It is written to that level's temperature entity or, for a calculated level, to the comfort temperature entity (so the calculated level matches the change). *Temporary* without a matching entity.
+          default: persistent
           selector:
             select:
               options:
@@ -307,7 +331,7 @@ blueprint:
             What happens while a window is open:
 
             - **Off:** thermostats are turned off, or set to their minimum temperature if they have no off mode.
-            - **Frost protection:** thermostats keep heating at the frost protection temperature.
+            - **Frost protection:** thermostats keep heating at the frost protection temperature, see **Temperatures**.
             - **Native:** the window state is sent to each thermostat's own window input; thermostats without one are turned off.
           default: "off"
           selector:
@@ -319,17 +343,6 @@ blueprint:
                   value: frost_protection
                 - label: Native
                   value: native
-        window_frost_protection_temperature:
-          name: Frost protection temperature
-          description: Used by "Frost protection". 0 uses each thermostat's minimum temperature.
-          default: 0
-          selector:
-            number:
-              min: 0
-              max: 20
-              step: 0.5
-              mode: box
-              unit_of_measurement: °C
         window_open_delay:
           name: Window open delay
           description: How long a window must be open before heating reacts.
@@ -476,9 +489,9 @@ blueprint:
 
             - their own `boost` preset
             - a boost switch on the same device
-            - their maximum temperature
+            - the comfort temperature plus the boost offset, see **Temperatures**
 
-            Selecting the `boost` preset on a wall controller also starts a boost.
+            Selecting the `boost` preset on a wall controller, or turning on a boost switch on its device, also starts a boost. It lasts while the controller boosts. With a wall controller in the area, a boost started on a single radiator thermostat is not passed on and ends with the next change in the area.
           default: []
           selector:
             entity:
@@ -615,10 +628,11 @@ trigger_variables:
   area: !input area
   comfort_temperature: !input comfort_temperature
   comfort_temperature_entity: !input comfort_temperature_entity
-  eco_temperature: !input eco_temperature
+  eco_temperature_offset: !input eco_temperature_offset
   eco_temperature_entity: !input eco_temperature_entity
-  away_temperature: !input away_temperature
+  away_temperature_offset: !input away_temperature_offset
   away_temperature_entity: !input away_temperature_entity
+  boost_temperature_offset: !input boost_temperature_offset
   valves: !input valves
   valve_behaviour: !input valve_behaviour
   controllers: !input controllers
@@ -633,7 +647,7 @@ trigger_variables:
   limescale_protection_time: !input limescale_protection_time
   windows: !input windows
   window_behaviour: !input window_behaviour
-  window_frost_protection_temperature: !input window_frost_protection_temperature
+  frost_protection_temperature: !input frost_protection_temperature
   window_open_delay: !input window_open_delay
   window_close_delay: !input window_close_delay
   schedules: !input schedules
@@ -811,6 +825,36 @@ triggers:
            or as_timestamp(now()) - since >= timedelta(**boost_duration).total_seconds() }}
       {% endif %}
     id: reconcile_boost_end
+  # Boost switches on wall controller devices. A template trigger fires on false -> true only,
+  # so one covers "a switch turned on" and one "all switches are off again".
+  - trigger: template
+    value_template: >
+      {% set ns = namespace(on=0) %}
+      {% for id in (controllers if controllers | count > 0
+                    else area_entities(area) | select('match', 'climate[.]') | list) %}
+        {% set device = device_id(id) %}
+        {% if device and (controllers | count > 0
+                          or state_attr(id, 'supported_features') | int(0) | bitwise_and(2) > 0) %}
+          {% set ns.on = ns.on + device_entities(device) | select('match', 'switch[.].*boost')
+               | select('is_state', 'on') | list | count %}
+        {% endif %}
+      {% endfor %}
+      {{ ns.on > 0 }}
+    id: reconcile_controller_boost_on
+  - trigger: template
+    value_template: >
+      {% set ns = namespace(on=0) %}
+      {% for id in (controllers if controllers | count > 0
+                    else area_entities(area) | select('match', 'climate[.]') | list) %}
+        {% set device = device_id(id) %}
+        {% if device and (controllers | count > 0
+                          or state_attr(id, 'supported_features') | int(0) | bitwise_and(2) > 0) %}
+          {% set ns.on = ns.on + device_entities(device) | select('match', 'switch[.].*boost')
+               | select('is_state', 'on') | list | count %}
+        {% endif %}
+      {% endfor %}
+      {{ ns.on == 0 }}
+    id: reconcile_controller_boost_off
 
   - trigger: state
     entity_id: !input valves
@@ -991,6 +1035,21 @@ actions:
         {% for id in valve_ids %}
           {% set device = device_id(id) %}
           {% if device and 'boost' not in (state_attr(id, 'preset_modes') or []) %}
+            {% set switch = device_entities(device) | select('match', 'switch[.].*boost')
+                 | first | default(none) %}
+            {% if switch %}
+              {% set ns.map = dict(ns.map, **{id: switch}) %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.map }}
+
+      # Boost switches on wall controller devices. Turning one on starts an area boost.
+      controller_boost_switches: >
+        {% set ns = namespace(map={}) %}
+        {% for id in controller_ids %}
+          {% set device = device_id(id) %}
+          {% if device %}
             {% set switch = device_entities(device) | select('match', 'switch[.].*boost')
                  | first | default(none) %}
             {% if switch %}
@@ -1216,6 +1275,7 @@ actions:
           {% endif %}
         {% endif %}
         {{ ns.active or controller_ids | select('is_state_attr', 'preset_mode', 'boost') | list
+           | count > 0 or controller_boost_switches.values() | select('is_state', 'on') | list
            | count > 0 }}
 
       # --- Level and target -------------------------------------------------
@@ -1233,16 +1293,39 @@ actions:
         {% else %}
           eco
         {% endif %}
-      level_entity_id: >
+      # Eco and away are calculated from comfort unless their entity overrides them.
+      comfort_level_temperature: >
+        {% if comfort_temperature_entity_id is not none
+              and states(comfort_temperature_entity_id) | is_number %}
+          {{ states(comfort_temperature_entity_id) | float }}
+        {% else %}
+          {{ comfort_temperature | float }}
+        {% endif %}
+      level_override_id: >
         {{ {'comfort': comfort_temperature_entity_id, 'eco': eco_temperature_entity_id,
             'away': away_temperature_entity_id}[level] }}
-      level_temperature: >
-        {% set static = {'comfort': comfort_temperature, 'eco': eco_temperature,
-                         'away': away_temperature}[level] %}
-        {% if level_entity_id is not none and states(level_entity_id) | is_number %}
-          {{ states(level_entity_id) | float }}
+      # Offset between comfort and the active level; 0 unless the level is calculated.
+      level_offset: >
+        {% if level == 'comfort' or level_override_id is not none %}
+          {{ 0 }}
         {% else %}
-          {{ static | float }}
+          {{ {'eco': eco_temperature_offset, 'away': away_temperature_offset}[level] | float }}
+        {% endif %}
+      # Entity a persistent change is written to: the level's override, or comfort for a
+      # calculated level.
+      level_entity_id: >
+        {{ level_override_id if level_override_id is not none
+           else comfort_temperature_entity_id }}
+      level_temperature: >
+        {% if level_override_id is not none and states(level_override_id) | is_number %}
+          {{ states(level_override_id) | float }}
+        {% elif level == 'comfort' %}
+          {{ comfort_level_temperature }}
+        {% else %}
+          {% set floor = {'eco': 16, 'away': 15}[level] %}
+          {% set offset = {'eco': eco_temperature_offset, 'away': away_temperature_offset}[level] %}
+          {{ [[comfort_level_temperature - offset | float, floor] | max,
+              comfort_level_temperature] | min }}
         {% endif %}
       area_off_reason: >
         {% if not heating_system_on %}
@@ -1279,7 +1362,7 @@ actions:
               and area_off_reason is none %}
           {% set low = state_attr(level_entity_id, 'min') | float(5) %}
           {% set high = state_attr(level_entity_id, 'max') | float(30) %}
-          {{ [[change_value, low] | max, high] | min }}
+          {{ [[change_value + level_offset, low] | max, high] | min }}
         {% else %}
           {{ none }}
         {% endif %}
@@ -1320,19 +1403,21 @@ actions:
                     and (area_off_reason != 'windows' or window_behaviour != 'frost_protection') %}
               {% set mode, temp = ('off', none) if 'off' in modes else (heat, min_temp) %}
             {% elif area_off_reason == 'windows' %}
-              {% set window_temp = window_frost_protection_temperature
-                   if window_frost_protection_temperature > 0 else min_temp %}
+              {% set window_temp = frost_protection_temperature
+                   if frost_protection_temperature > 0 else min_temp %}
               {% set mode, temp = heat, [[window_temp, min_temp] | max, max_temp] | min %}
             {% elif boost_active and is_range %}
               {# Leave a controller that is boosting on its own alone. #}
               {% set mode = heat %}
-              {% set temp = none if current_preset == 'boost' else clamp %}
+              {% set temp = none if current_preset == 'boost'
+                   or is_state(controller_boost_switches.get(id, ''), 'on') else clamp %}
             {% elif boost_active and 'boost' in presets %}
               {% set mode, temp, preset = heat, none, 'boost' %}
             {% elif boost_active and id in boost_switches %}
               {% set mode, temp = heat, clamp %}
             {% elif boost_active %}
-              {% set mode, temp = heat, max_temp %}
+              {% set boost_temp = comfort_level_temperature + boost_temperature_offset | float %}
+              {% set mode, temp = heat, [[boost_temp, min_temp] | max, max_temp] | min %}
             {% else %}
               {% set mode, temp = heat, clamp %}
             {% endif %}
