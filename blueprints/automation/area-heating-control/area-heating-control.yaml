@@ -2,23 +2,20 @@ blueprint:
   name: Area Heating Control 2.0
   # yamllint disable rule:line-length
   description: |
-    [![Version](https://img.shields.io/static/v1?label=version&message=2.1.0&color=blue)](https://github.com/mxstzdev/home-assistant-blueprints/blob/main/blueprints/automation/area-heating-control/CHANGELOG.md) [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-%E2%89%A5%202025.1.0-41BDF5?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/) <!-- x-release-please-version -->
+    [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-%E2%89%A5%202025.1.0-41BDF5?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/) [![Version](https://img.shields.io/static/v1?label=version&message=2.1.0&color=blue)](https://github.com/mxstzdev/home-assistant-blueprints/blob/main/blueprints/automation/area-heating-control/CHANGELOG.md) <!-- x-release-please-version -->
 
-    Area based heating control. It uses Home Assistant's [areas](https://www.home-assistant.io/docs/organizing/areas/) to find the thermostats and sensors of a room and keeps them at the right temperature.
+    Blueprint for advanced, area-based heating control automations. It uses Home Assistant's [areas](https://www.home-assistant.io/docs/organizing/areas/) to find the thermostats and sensors of a room and keeps them at the right temperature.
 
     - 🌱 Auto-calculated temperatures: set your comfort temperature, and eco, away and boost follow it (overridable with custom entities)
-    - 🗓️ Schedules: comfort while any selected schedule is on
-    - 👥 Persons and guest mode: comfort only while somebody is home
-    - 🚶 Presence sensor: comfort while the room is occupied
-    - ✈️ Away: vacation mode, or away temperature once nobody has been home for a while
-    - 🪟 Windows: heating off, frost protection, or the thermostat's own window handling
-    - ♨️ Central heating system and ☀️ outdoor temperature (sensor or weather): heating off when it is not needed
-    - 🚀 Boost from a trigger or the wall controller, using the thermostat's own boost where available
-    - 🎛️ Wall controllers: changes on them apply to the whole room
-    - 🔒 Read-only thermostats, with the device's child lock where available
-    - ⚙️ Calibration against external temperature sensors, via the thermostat's external input or its offset
+    - 🕵️ Entity auto-discovery for thermostats, window sensors and temperature sensors
+    - 🗓️ Multiple heating schedules, e.g. one per household member
+    - 👥 Persons and presence detection, including guest and vacation mode
+    - 🪟 Open window detection with heating off or frost protection
+    - ⚙️ Thermostat calibration against external temperature sensors
+    - ♨️ Heating demand detection based on outdoor temperature and central heating system status
+    - 🚀 Temperature boost support for a quick warm-up
+    - 🎛️ Wall controller support to control your area from one place
     - ⚔️ Weekly limescale protection for radiator valves
-    - 🕵️ Auto-discovery of all of the above from the area
 
     [Documentation](https://github.com/mxstzdev/home-assistant-blueprints/tree/main/blueprints/automation/area-heating-control) · [Changelog](https://github.com/mxstzdev/home-assistant-blueprints/blob/main/blueprints/automation/area-heating-control/CHANGELOG.md)
 
@@ -92,7 +89,7 @@ blueprint:
         away_temperature_offset:
           name: Away offset
           description: |
-            Used during vacation mode or after nobody has been home for the away delay, see **Away**. Away temperature = comfort temperature minus this offset, but at least 15 °C and never above the comfort temperature.
+            Used during vacation mode or after nobody has been home for the away delay, see **Persons and presence**. Away temperature = comfort temperature minus this offset, but at least 15 °C and never above the comfort temperature.
           default: 5
           selector:
             number:
@@ -134,38 +131,196 @@ blueprint:
               mode: box
               unit_of_measurement: °C
 
-    thermostat_section:
-      name: Radiator thermostats
-      icon: mdi:radiator
+    schedule_section:
+      name: Schedules
+      icon: mdi:clock-outline
       collapsed: true
       input:
-        valves:
-          name: Radiator thermostats
-          description: |
-            Radiator thermostats (TRVs) with a single target temperature.
-
-            **Empty:** all climate entities of the area with a single target temperature.
+        schedules:
+          name: Schedules
+          description: >
+            Comfort temperature while any of these schedules is on, eco temperature otherwise. If
+            persons are configured, somebody must also be home.
           default: []
           selector:
             entity:
               multiple: true
               filter:
-                - domain: climate
-        valve_behaviour:
-          name: Radiator thermostat input mode
-          description: |
-            What happens when someone changes the target temperature on a radiator thermostat:
+                - domain: schedule
 
-            - **Temporary:** kept until the next change in the area.
-            - **Read-only:** reverted at once, and the thermostat's child lock is turned on where available.
-          default: temporary
+    person_section:
+      name: Persons and presence
+      icon: mdi:account-multiple
+      collapsed: true
+      input:
+        persons:
+          name: Persons
+          description: >
+            Comfort temperature only while at least one of them is home. Without schedules and a
+            presence sensor, the area is in comfort whenever somebody is home.
+          default: []
+          selector:
+            entity:
+              multiple: true
+              filter:
+                - domain: person
+        person_arrive_delay:
+          name: Arrive delay
+          description: How long somebody must be home before they count as home.
+          default:
+            minutes: 1
+          selector:
+            duration:
+        person_leave_delay:
+          name: Leave delay
+          description: How long everybody must be away before the area counts as empty.
+          default:
+            minutes: 1
+          selector:
+            duration:
+        guest_mode:
+          name: Guest mode
+          description: Optional. Counts as somebody at home while it is on.
+          default: []
+          selector:
+            entity:
+              filter:
+                - domain:
+                    - input_boolean
+                    - binary_sensor
+        presence_sensor:
+          name: Presence sensor
+          description: >
+            Optional. While it detects presence, the area uses the comfort temperature, regardless
+            of schedules and persons. When it clears, schedules and persons decide again.
+          default: []
+          selector:
+            entity:
+              filter:
+                - domain: binary_sensor
+                  device_class:
+                    - occupancy
+                    - presence
+                    - motion
+                - domain: input_boolean
+        presence_on_delay:
+          name: Presence detected delay
+          description: How long presence must be detected before the comfort temperature is set.
+          default:
+            minutes: 5
+          selector:
+            duration:
+        presence_off_delay:
+          name: Presence cleared delay
+          description: How long presence must be cleared before schedules and persons decide again.
+          default:
+            minutes: 5
+          selector:
+            duration:
+        vacation_mode:
+          name: Vacation mode
+          description: >
+            Optional. The away temperature is used while it is on, even if presence is detected.
+          default: []
+          selector:
+            entity:
+              filter:
+                - domain:
+                    - input_boolean
+                    - binary_sensor
+        away_delay:
+          name: Away delay
+          description: >
+            The away temperature is used once nobody has been home for this long, unless presence is
+            detected. Requires persons. 0 disables it.
+          default:
+            hours: 0
+          selector:
+            duration:
+
+    window_section:
+      name: Windows
+      icon: mdi:window-closed-variant
+      collapsed: true
+      input:
+        windows:
+          name: Window sensors
+          description: |
+            **Empty:** all window and door sensors of the area.
+          default: []
+          selector:
+            entity:
+              multiple: true
+              filter:
+                - domain:
+                    - binary_sensor
+                    - sensor
+                  device_class:
+                    - window
+                    - door
+        window_behaviour:
+          name: Window open behaviour
+          description: |
+            What happens while a window is open:
+
+            - **Off:** thermostats are turned off, or set to their minimum temperature if they have no off mode.
+            - **Frost protection:** thermostats keep heating at the frost protection temperature, see **Temperatures**.
+            - **Native:** the window state is sent to each thermostat's own window input; thermostats without one are turned off.
+          default: "off"
           selector:
             select:
               options:
-                - label: Temporary
-                  value: temporary
-                - label: Read-only
-                  value: readonly
+                - label: "Off"
+                  value: "off"
+                - label: Frost protection
+                  value: frost_protection
+                - label: Native
+                  value: native
+        window_open_delay:
+          name: Window open delay
+          description: How long a window must be open before heating reacts.
+          default:
+            minutes: 1
+          selector:
+            duration:
+        window_close_delay:
+          name: Window close delay
+          description: How long all windows must be closed before heating resumes.
+          default:
+            minutes: 1
+          selector:
+            duration:
+
+    boost_section:
+      name: Boost
+      icon: mdi:rocket-launch
+      collapsed: true
+      input:
+        boost_entity:
+          name: Boost trigger
+          description: |
+            Optional. Starts a boost when it turns on, or when it is pressed. Radiator thermostats boost with the first of:
+
+            - their own `boost` preset
+            - a boost switch on the same device
+            - the comfort temperature plus the boost offset, see **Temperatures**
+
+            Selecting the `boost` preset on a wall controller, or turning on a boost switch on its device, also starts a boost. It lasts while the controller boosts. With a wall controller in the area, a boost started on a single radiator thermostat is not passed on and ends with the next change in the area.
+          default: []
+          selector:
+            entity:
+              filter:
+                - domain:
+                    - input_boolean
+                    - input_button
+                    - binary_sensor
+        boost_duration:
+          name: Boost duration
+          description: How long a boost lasts. A boost trigger that is still on is turned off then.
+          default:
+            minutes: 30
+          selector:
+            duration:
 
     controller_section:
       name: Wall controllers
@@ -202,6 +357,39 @@ blueprint:
                   value: temporary
                 - label: Persistent
                   value: persistent
+
+    thermostat_section:
+      name: Radiator thermostats
+      icon: mdi:radiator
+      collapsed: true
+      input:
+        valves:
+          name: Radiator thermostats
+          description: |
+            Radiator thermostats (TRVs) with a single target temperature.
+
+            **Empty:** all climate entities of the area with a single target temperature.
+          default: []
+          selector:
+            entity:
+              multiple: true
+              filter:
+                - domain: climate
+        valve_behaviour:
+          name: Radiator thermostat input mode
+          description: |
+            What happens when someone changes the target temperature on a radiator thermostat:
+
+            - **Temporary:** kept until the next change in the area.
+            - **Read-only:** reverted at once, and the thermostat's child lock is turned on where available.
+          default: temporary
+          selector:
+            select:
+              options:
+                - label: Temporary
+                  value: temporary
+                - label: Read-only
+                  value: readonly
 
     calibration_section:
       name: Calibration
@@ -266,183 +454,16 @@ blueprint:
                     - input_boolean
                     - binary_sensor
 
-    maintenance_section:
-      name: Maintenance
-      icon: mdi:tools
+    heating_demand_section:
+      name: Heating demand
+      icon: mdi:water-boiler
       collapsed: true
       input:
-        limescale_protection:
-          name: Limescale protection
+        heating_system:
+          name: Heating system
           description: >
-            Once a week, opens all radiator thermostats fully for one minute to keep the valves from
-            sticking. Runs even while heating is off for any reason.
-          default: true
-          selector:
-            boolean:
-        limescale_protection_day:
-          name: Limescale protection day
-          default: fri
-          selector:
-            select:
-              options:
-                - label: Monday
-                  value: mon
-                - label: Tuesday
-                  value: tue
-                - label: Wednesday
-                  value: wed
-                - label: Thursday
-                  value: thu
-                - label: Friday
-                  value: fri
-                - label: Saturday
-                  value: sat
-                - label: Sunday
-                  value: sun
-        limescale_protection_time:
-          name: Limescale protection time
-          default: "12:00:00"
-          selector:
-            time:
-
-    window_section:
-      name: Windows
-      icon: mdi:window-closed-variant
-      collapsed: true
-      input:
-        windows:
-          name: Window sensors
-          description: |
-            **Empty:** all window and door sensors of the area.
-          default: []
-          selector:
-            entity:
-              multiple: true
-              filter:
-                - domain:
-                    - binary_sensor
-                    - sensor
-                  device_class:
-                    - window
-                    - door
-        window_behaviour:
-          name: Window open behaviour
-          description: |
-            What happens while a window is open:
-
-            - **Off:** thermostats are turned off, or set to their minimum temperature if they have no off mode.
-            - **Frost protection:** thermostats keep heating at the frost protection temperature, see **Temperatures**.
-            - **Native:** the window state is sent to each thermostat's own window input; thermostats without one are turned off.
-          default: "off"
-          selector:
-            select:
-              options:
-                - label: "Off"
-                  value: "off"
-                - label: Frost protection
-                  value: frost_protection
-                - label: Native
-                  value: native
-        window_open_delay:
-          name: Window open delay
-          description: How long a window must be open before heating reacts.
-          default:
-            minutes: 1
-          selector:
-            duration:
-        window_close_delay:
-          name: Window close delay
-          description: How long all windows must be closed before heating resumes.
-          default:
-            minutes: 1
-          selector:
-            duration:
-
-    schedule_section:
-      name: Schedules
-      icon: mdi:clock-outline
-      collapsed: true
-      input:
-        schedules:
-          name: Schedules
-          description: >
-            Comfort temperature while any of these schedules is on, eco temperature otherwise. If
-            persons are configured, somebody must also be home.
-          default: []
-          selector:
-            entity:
-              multiple: true
-              filter:
-                - domain: schedule
-
-    presence_section:
-      name: Presence
-      icon: mdi:motion-sensor
-      collapsed: true
-      input:
-        presence_sensor:
-          name: Presence sensor
-          description: >
-            Optional. While it detects presence, the area uses the comfort temperature, regardless
-            of schedules and persons. When it clears, schedules and persons decide again.
-          default: []
-          selector:
-            entity:
-              filter:
-                - domain: binary_sensor
-                  device_class:
-                    - occupancy
-                    - presence
-                    - motion
-                - domain: input_boolean
-        presence_on_delay:
-          name: Presence detected delay
-          description: How long presence must be detected before the comfort temperature is set.
-          default:
-            minutes: 5
-          selector:
-            duration:
-        presence_off_delay:
-          name: Presence cleared delay
-          description: How long presence must be cleared before schedules and persons decide again.
-          default:
-            minutes: 5
-          selector:
-            duration:
-
-    person_section:
-      name: Persons
-      icon: mdi:account-multiple
-      collapsed: true
-      input:
-        persons:
-          name: Persons
-          description: >
-            Comfort temperature only while at least one of them is home. Without schedules and a
-            presence sensor, the area is in comfort whenever somebody is home.
-          default: []
-          selector:
-            entity:
-              multiple: true
-              filter:
-                - domain: person
-        person_arrive_delay:
-          name: Arrive delay
-          description: How long somebody must be home before they count as home.
-          default:
-            minutes: 1
-          selector:
-            duration:
-        person_leave_delay:
-          name: Leave delay
-          description: How long everybody must be away before the area counts as empty.
-          default:
-            minutes: 1
-          selector:
-            duration:
-        guest_mode:
-          name: Guest mode
-          description: Optional. Counts as somebody at home while it is on.
+            Optional. An entity that is on while the central heating system heats. While it is off,
+            heating is turned off in this area.
           default: []
           selector:
             entity:
@@ -450,69 +471,13 @@ blueprint:
                 - domain:
                     - input_boolean
                     - binary_sensor
-
-    away_section:
-      name: Away
-      icon: mdi:airplane
-      collapsed: true
-      input:
-        vacation_mode:
-          name: Vacation mode
-          description: >
-            Optional. The away temperature is used while it is on, even if presence is detected.
-          default: []
-          selector:
-            entity:
-              filter:
-                - domain:
-                    - input_boolean
-                    - binary_sensor
-        away_delay:
-          name: Away delay
-          description: >
-            The away temperature is used once nobody has been home for this long, unless presence is
-            detected. Requires persons. 0 disables it.
+        heating_system_delay:
+          name: Heating system delay
+          description: How long the heating system must keep a new state before the area follows.
           default:
-            hours: 0
+            minutes: 2
           selector:
             duration:
-
-    boost_section:
-      name: Boost
-      icon: mdi:rocket-launch
-      collapsed: true
-      input:
-        boost_entity:
-          name: Boost trigger
-          description: |
-            Optional. Starts a boost when it turns on, or when it is pressed. Radiator thermostats boost with the first of:
-
-            - their own `boost` preset
-            - a boost switch on the same device
-            - the comfort temperature plus the boost offset, see **Temperatures**
-
-            Selecting the `boost` preset on a wall controller, or turning on a boost switch on its device, also starts a boost. It lasts while the controller boosts. With a wall controller in the area, a boost started on a single radiator thermostat is not passed on and ends with the next change in the area.
-          default: []
-          selector:
-            entity:
-              filter:
-                - domain:
-                    - input_boolean
-                    - input_button
-                    - binary_sensor
-        boost_duration:
-          name: Boost duration
-          description: How long a boost lasts. A boost trigger that is still on is turned off then.
-          default:
-            minutes: 30
-          selector:
-            duration:
-
-    outdoor_section:
-      name: Outdoor temperature
-      icon: mdi:sun-thermometer-outline
-      collapsed: true
-      input:
         outdoor_temperature_entity:
           name: Outdoor temperature sensor
           description: >
@@ -556,30 +521,44 @@ blueprint:
               mode: box
               unit_of_measurement: °C
 
-    heating_system_section:
-      name: Heating system
-      icon: mdi:water-boiler
+    maintenance_section:
+      name: Maintenance
+      icon: mdi:tools
       collapsed: true
       input:
-        heating_system:
-          name: Heating system
+        limescale_protection:
+          name: Limescale protection
           description: >
-            Optional. An entity that is on while the central heating system heats. While it is off,
-            heating is turned off in this area.
-          default: []
+            Once a week, opens all radiator thermostats fully for one minute to keep the valves from
+            sticking. Runs even while heating is off for any reason.
+          default: true
           selector:
-            entity:
-              filter:
-                - domain:
-                    - input_boolean
-                    - binary_sensor
-        heating_system_delay:
-          name: Heating system delay
-          description: How long the heating system must keep a new state before the area follows.
-          default:
-            minutes: 2
+            boolean:
+        limescale_protection_day:
+          name: Limescale protection day
+          default: fri
           selector:
-            duration:
+            select:
+              options:
+                - label: Monday
+                  value: mon
+                - label: Tuesday
+                  value: tue
+                - label: Wednesday
+                  value: wed
+                - label: Thursday
+                  value: thu
+                - label: Friday
+                  value: fri
+                - label: Saturday
+                  value: sat
+                - label: Sunday
+                  value: sun
+        limescale_protection_time:
+          name: Limescale protection time
+          default: "12:00:00"
+          selector:
+            time:
 
     advanced_section:
       name: Advanced
