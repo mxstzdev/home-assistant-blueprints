@@ -30,7 +30,7 @@ scripts/                    # helpers used by make and CI
 ## Adding a blueprint
 
 1. Create the skeleton. `NAME` is lowercase `kebab-case` and unique across domains,
-   since it is also the release tag prefix and commit scope; `DOMAIN` defaults to
+   since it is also the release tag prefix; `DOMAIN` defaults to
    `automation` and `MIN_VERSION` to `2025.1.0`:
 
    ```sh
@@ -109,10 +109,11 @@ pass [ShellCheck](https://www.shellcheck.net/).
 Releases are managed by [release-please](https://github.com/googleapis/release-please)
 in manifest mode. Each blueprint folder is its own package:
 
-- Commits touching a blueprint folder are attributed to that blueprint only.
+- Commits touching a blueprint folder are attributed to that blueprint only. They take no
+  scope, since each blueprint has its own changelog.
 - release-please opens one release pull request per blueprint. Merging it bumps the
   version line in the blueprint and the version badge in its README, updates its
-  `CHANGELOG.md`, and creates the tag `<name>-X.Y.Z` with a GitHub release.
+  `CHANGELOG.md`, and creates the tag `<name>/X.Y.Z` with a GitHub release.
 - Versions follow [SemVer](https://semver.org/) and start at `0.1.0`. `feat:` bumps
   minor; `fix:`, `refactor:`, `perf:`, `deps:` and `revert:` bump patch. A breaking change
   (`feat!:` or a `BREAKING CHANGE:` footer) bumps minor while below `1.0.0` and major from
@@ -125,7 +126,8 @@ in manifest mode. Each blueprint folder is its own package:
 
 Commit messages (or squash-merge titles) must follow
 [Conventional Commits](https://www.conventionalcommits.org/), for example
-`feat(motion-light): add illuminance condition`.
+`feat: add illuminance condition`. Commits outside blueprint folders may use a scope, such
+as `fix(scripts): …`.
 
 Release pull requests opened with the default `GITHUB_TOKEN` do not trigger CI. To run
 checks on them, add a fine-grained token with `contents` and `pull-requests` write access
