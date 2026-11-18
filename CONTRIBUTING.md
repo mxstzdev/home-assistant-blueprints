@@ -43,11 +43,12 @@ scripts/                    # helpers used by make and CI
    creating that sub-heading and table if this is the domain's first blueprint.
 2. Replace every `TODO` in the blueprint, its README and `tests/<domain>.yaml`.
 3. Keep these conventions when editing:
-   - The `description` and the README both start with the Version and Home Assistant
-     badges; the `description` uses absolute GitHub links, since relative ones do not
-     resolve in Home Assistant. release-please updates both Version badges on each
-     release; keep the `<!-- x-release-please-version -->` comment and nothing else
-     versioned on those lines.
+   - The `description` starts with the Version badge, using absolute GitHub links, since
+     relative ones do not resolve in Home Assistant. The README starts with the License,
+     Version and Home Assistant badges, in that order. release-please updates both Version
+     badges on each release; keep the `<!-- x-release-please-version -->` comment on those
+     lines. It replaces only the first version on a marked line, so the Version badge must
+     stay the first versioned badge there.
    - The `description` ends with the Documentation and Changelog links (the blueprint's
      folder and its `CHANGELOG.md` on GitHub) and the Ko-fi button. Keep the `yamllint`
      comments around it, as the badge lines exceed the line length.
@@ -59,9 +60,10 @@ scripts/                    # helpers used by make and CI
      document with a short description, between Updating and License. Links inside
      `docs/` are relative, for example `../README.md#inputs`; the root license is
      `../../../../LICENSE` from there.
-   - Both Home Assistant badges and the README's Requirements line show `min_version`
-     as `X.Y.Z`. CI fails when either badge does not match, so change them in the same
-     commit as `min_version`.
+   - The README's Home Assistant badge and Requirements line show `min_version` as
+     `X.Y.Z`. CI fails when the badge does not match, so change them in the same commit as
+     `min_version`. The `description` has no Home Assistant badge, because Home Assistant
+     itself refuses blueprints that need a newer version.
    - `tests/<domain>.yaml` uses the blueprint as `mxstzdev/<name>.yaml` and fills every
      required input. For an automation it is a list, for a script a mapping of script
      ids.

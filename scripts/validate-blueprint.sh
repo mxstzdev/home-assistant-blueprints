@@ -163,12 +163,12 @@ main() {
     err "${blueprint}: blueprint.homeassistant.min_version is required"
     exit 1
   fi
-  for file in "${blueprint}" "${dir}/README.md"; do
-    if ! grep -qF "Home%20Assistant-%E2%89%A5%20${min_version}-" "${file}"; then
-      err "${file}: Home Assistant badge must show ${min_version}"
-      exit 1
-    fi
-  done
+  # The Home Assistant badge is only in the README: Home Assistant itself refuses blueprints
+  # that need a newer version.
+  if ! grep -qF "Home%20Assistant-%E2%89%A5%20${min_version}-" "${dir}/README.md"; then
+    err "${dir}/README.md: Home Assistant badge must show ${min_version}"
+    exit 1
+  fi
 
   local version
   case "${target}" in
