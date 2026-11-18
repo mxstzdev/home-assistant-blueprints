@@ -29,12 +29,41 @@ The floors of 16 °C (eco) and 15 °C (away) are fixed: lower setbacks rarely sa
 risk damp and mould. With the comfort temperature at or below a floor, the level uses the comfort
 temperature. A temperature entity with a valid state always wins over the calculated value.
 
-## Radiator thermostats
+## Schedules
 
 | Input | Key | Default | Description |
 | ----- | --- | ------- | ----------- |
-| Radiator thermostats | `valves` | area: single target temperature | |
-| Radiator thermostat input mode | `valve_behaviour` | `temporary` | `temporary` or `readonly`, see [Changes on thermostats](how-it-works.md#changes-on-thermostats) |
+| Schedules | `schedules` | | `schedule` entities. Comfort while any is on |
+
+## Persons and presence
+
+| Input | Key | Default | Description |
+| ----- | --- | ------- | ----------- |
+| Persons | `persons` | | `person` entities |
+| Arrive delay | `person_arrive_delay` | 1 min | |
+| Leave delay | `person_leave_delay` | 1 min | |
+| Guest mode | `guest_mode` | | Counts as somebody at home while on |
+| Presence sensor | `presence_sensor` | | Occupancy, presence or motion sensor, or `input_boolean` |
+| Presence detected delay | `presence_on_delay` | 5 min | |
+| Presence cleared delay | `presence_off_delay` | 5 min | |
+| Vacation mode | `vacation_mode` | | Away temperature while on |
+| Away delay | `away_delay` | 0 (off) | Away temperature once nobody has been home this long. Requires persons |
+
+## Windows
+
+| Input | Key | Default | Description |
+| ----- | --- | ------- | ----------- |
+| Window sensors | `windows` | area: window and door sensors | |
+| Window open behaviour | `window_behaviour` | `"off"` | `"off"`, `frost_protection` or `native`, see [Windows](how-it-works.md#windows) |
+| Window open delay | `window_open_delay` | 1 min | |
+| Window close delay | `window_close_delay` | 1 min | |
+
+## Boost
+
+| Input | Key | Default | Description |
+| ----- | --- | ------- | ----------- |
+| Boost trigger | `boost_entity` | | `input_boolean`, `input_button` or `binary_sensor`, see [Boost](how-it-works.md#boost) |
+| Boost duration | `boost_duration` | 30 min | |
 
 ## Wall controllers
 
@@ -42,6 +71,13 @@ temperature. A temperature entity with a valid state always wins over the calcul
 | ----- | --- | ------- | ----------- |
 | Wall controllers | `controllers` | area: target temperature range | |
 | Wall controller input mode | `controller_behaviour` | `persistent` | `readonly`, `temporary` or `persistent`, see [Changes on thermostats](how-it-works.md#changes-on-thermostats) |
+
+## Radiator thermostats
+
+| Input | Key | Default | Description |
+| ----- | --- | ------- | ----------- |
+| Radiator thermostats | `valves` | area: single target temperature | |
+| Radiator thermostat input mode | `valve_behaviour` | `temporary` | `temporary` or `readonly`, see [Changes on thermostats](how-it-works.md#changes-on-thermostats) |
 
 ## Calibration
 
@@ -53,6 +89,17 @@ temperature. A temperature entity with a valid state always wins over the calcul
 | Calibration timeout | `calibration_timeout` | 5 min | Minimum time between two offset changes per thermostat |
 | Calibration reset | `calibration_reset` | | Resets all offsets to 0 when it turns on |
 
+## Heating demand
+
+| Input | Key | Default | Description |
+| ----- | --- | ------- | ----------- |
+| Heating system | `heating_system` | | `on` or `active` while the boiler heats |
+| Heating system delay | `heating_system_delay` | 2 min | |
+| Outdoor temperature sensor | `outdoor_temperature_entity` | | Temperature sensor, used first |
+| Weather | `outdoor_weather_entity` | | `weather` entity, used while the sensor has no valid value |
+| Outdoor cutoff | `outdoor_cutoff_temperature` | 18 °C | Heating off at or above this temperature |
+| Outdoor hysteresis | `outdoor_cutoff_hysteresis` | 1 °C | Heating resumes below the cutoff minus this value |
+
 ## Maintenance
 
 | Input | Key | Default | Description |
@@ -60,68 +107,6 @@ temperature. A temperature entity with a valid state always wins over the calcul
 | Limescale protection | `limescale_protection` | `true` | Opens all radiator valves for one minute once a week |
 | Limescale protection day | `limescale_protection_day` | `fri` | `mon` to `sun` |
 | Limescale protection time | `limescale_protection_time` | `12:00:00` | |
-
-## Windows
-
-| Input | Key | Default | Description |
-| ----- | --- | ------- | ----------- |
-| Window sensors | `windows` | area: window and door sensors | |
-| Window open behaviour | `window_behaviour` | `"off"` | `"off"`, `frost_protection` or `native`, see [Windows](how-it-works.md#windows) |
-| Window open delay | `window_open_delay` | 1 min | |
-| Window close delay | `window_close_delay` | 1 min | |
-
-## Schedules
-
-| Input | Key | Default | Description |
-| ----- | --- | ------- | ----------- |
-| Schedules | `schedules` | | `schedule` entities. Comfort while any is on |
-
-## Presence
-
-| Input | Key | Default | Description |
-| ----- | --- | ------- | ----------- |
-| Presence sensor | `presence_sensor` | | Occupancy, presence or motion sensor, or `input_boolean` |
-| Presence detected delay | `presence_on_delay` | 5 min | |
-| Presence cleared delay | `presence_off_delay` | 5 min | |
-
-## Persons
-
-| Input | Key | Default | Description |
-| ----- | --- | ------- | ----------- |
-| Persons | `persons` | | `person` entities |
-| Arrive delay | `person_arrive_delay` | 1 min | |
-| Leave delay | `person_leave_delay` | 1 min | |
-| Guest mode | `guest_mode` | | Counts as somebody at home while on |
-
-## Away
-
-| Input | Key | Default | Description |
-| ----- | --- | ------- | ----------- |
-| Vacation mode | `vacation_mode` | | Away temperature while on |
-| Away delay | `away_delay` | 0 (off) | Away temperature once nobody has been home this long. Requires persons |
-
-## Boost
-
-| Input | Key | Default | Description |
-| ----- | --- | ------- | ----------- |
-| Boost trigger | `boost_entity` | | `input_boolean`, `input_button` or `binary_sensor`, see [Boost](how-it-works.md#boost) |
-| Boost duration | `boost_duration` | 30 min | |
-
-## Outdoor temperature
-
-| Input | Key | Default | Description |
-| ----- | --- | ------- | ----------- |
-| Outdoor temperature sensor | `outdoor_temperature_entity` | | Temperature sensor, used first |
-| Weather | `outdoor_weather_entity` | | `weather` entity, used while the sensor has no valid value |
-| Outdoor cutoff | `outdoor_cutoff_temperature` | 18 °C | Heating off at or above this temperature |
-| Outdoor hysteresis | `outdoor_cutoff_hysteresis` | 1 °C | Heating resumes below the cutoff minus this value |
-
-## Heating system
-
-| Input | Key | Default | Description |
-| ----- | --- | ------- | ----------- |
-| Heating system | `heating_system` | | `on` or `active` while the boiler heats |
-| Heating system delay | `heating_system_delay` | 2 min | |
 
 ## Advanced
 
