@@ -60,23 +60,38 @@ url_encode() {
 }
 
 #######################################
-# Prints the Version and Home Assistant badges, one per line.
-# The Version badge uses the static endpoint because release-please would read
-# the "-blue" of "version-X.Y.Z-blue" as a prerelease suffix.
+# Prints the Version badge. It uses the static endpoint because release-please
+# would read the "-blue" of "version-X.Y.Z-blue" as a prerelease suffix.
 # Globals:
 #   INITIAL_VERSION
 # Arguments:
-#   CHANGELOG link, min_version.
+#   CHANGELOG link.
+# Outputs:
+#   Writes the badge to STDOUT.
+#######################################
+version_badge() {
+  local changelog_url="$1"
+
+  echo "[![Version](https://img.shields.io/static/v1?label=version&message=${INITIAL_VERSION}&color=blue)](${changelog_url})"
+}
+
+#######################################
+# Prints the README badges on one line: License, Version and Home Assistant.
+# release-please replaces the first version on the marked line, so the Version
+# badge must stay the first versioned badge.
+# Arguments:
+#   min_version.
 # Outputs:
 #   Writes the badges to STDOUT.
 #######################################
-badges() {
-  local changelog_url="$1" min_version="$2"
+readme_badges() {
+  local min_version="$1"
   local shields="https://img.shields.io"
 
-  echo "[![Version](${shields}/static/v1?label=version&message=${INITIAL_VERSION}&color=blue)](${changelog_url})" \
+  echo "[![License](${shields}/badge/license-MIT-blue)](../../../LICENSE)" \
+    "$(version_badge CHANGELOG.md)" \
+    "[![Home Assistant](${shields}/badge/Home%20Assistant-%E2%89%A5%20${min_version}-41BDF5?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/)" \
     "<!-- x-release-please-version -->"
-  echo "[![Home Assistant](${shields}/badge/Home%20Assistant-%E2%89%A5%20${min_version}-41BDF5?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/)"
 }
 
 #######################################
@@ -92,9 +107,8 @@ write_blueprint() {
   local file="$1" domain="$2" name="$3" title="$4" source_url="$5"
   local path="$6" min_version="$7"
   local badge_lines
-  badge_lines="$(badges "${GITHUB_URL}/blob/main/${path}/CHANGELOG.md" \
-    "${min_version}" \
-    | sed 's/^/    /')"
+  badge_lines="    $(version_badge "${GITHUB_URL}/blob/main/${path}/CHANGELOG.md")"
+  badge_lines+=" <!-- x-release-please-version -->"
 
   cat > "${file}" <<EOF
 blueprint:
@@ -186,7 +200,7 @@ write_readme() {
   cat > "${file}" <<EOF
 # ${title}
 
-$(badges CHANGELOG.md "${min_version}")
+$(readme_badges "${min_version}")
 
 TODO: Describe what the blueprint does.
 
