@@ -28,18 +28,20 @@ optional: without helpers, the blueprint uses the static values of its inputs.
 
 ### Temperatures
 
-Create a **Number** helper for each level you want to change from a dashboard, instead of editing
-the automation:
+Eco, away and boost temperatures are calculated from the comfort temperature, see
+[Temperatures](how-it-works.md#temperatures). Create a **Number** helper for the comfort
+temperature, so you can change it from a dashboard instead of editing the automation:
 
 | Helper | Suggested settings | Input |
 | ------ | ------------------ | ----- |
 | `input_number.living_room_comfort` | 15 to 25 °C, step 0.5 | Comfort temperature entity |
-| `input_number.living_room_eco` | 15 to 25 °C, step 0.5 | Eco temperature entity |
-| `input_number.living_room_away` | 5 to 20 °C, step 0.5 | Away temperature entity |
+| `input_number.living_room_eco` | 15 to 25 °C, step 0.5 | Eco temperature entity (optional override) |
+| `input_number.living_room_away` | 5 to 20 °C, step 0.5 | Away temperature entity (optional override) |
 
-Helpers can be shared: one `input_number.home_away` for all areas is a common choice. With the
-wall controller input mode set to *Persistent*, changes on the wall controllers are written back to
-these helpers.
+Only create the eco and away helpers to set a fixed value instead of the calculated one. Helpers
+can be shared: one `input_number.home_away` for all areas is a common choice. Changes on the wall
+controllers are written back to these helpers (*Persistent*, the default); for a calculated level,
+they go to the comfort helper.
 
 ### Schedules
 
@@ -115,8 +117,6 @@ use_blueprint:
   input:
     area: living_room
     comfort_temperature_entity: input_number.living_room_comfort
-    eco_temperature_entity: input_number.living_room_eco
-    away_temperature_entity: input_number.home_away
     schedules:
       - schedule.living_room_heating
     persons:

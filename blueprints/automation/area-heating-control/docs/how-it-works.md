@@ -15,7 +15,8 @@ preset differs from the wanted state. In order of priority:
 
    Thermostats are turned off, or set to their minimum temperature if they have no off mode.
 3. **Boost**, while active: radiator thermostats use their `boost` preset, a boost switch on the
-   same device, or their maximum temperature, in that order.
+   same device, or the comfort temperature plus the boost offset (at most their maximum
+   temperature), in that order.
 4. The **level** temperature, clamped to each thermostat's range:
    - away while vacation mode is on;
    - comfort while the presence sensor detects someone;
@@ -25,6 +26,21 @@ preset differs from the wanted state. In order of priority:
    - with persons or guest mode: comfort while somebody is home, otherwise eco;
    - otherwise: eco.
 
+   Eco and away are calculated from the comfort temperature, see [Temperatures](#temperatures).
+
+## Temperatures
+
+Only the comfort temperature needs to be set. The other temperatures follow it:
+
+| Level | Temperature | Default (comfort 22 °C) |
+| ----- | ----------- | ----------------------- |
+| Comfort | Comfort temperature entity, or the comfort temperature | 22 °C |
+| Eco | Comfort − eco offset, at least 16 °C, never above comfort | 19 °C |
+| Away | Comfort − away offset, at least 15 °C, never above comfort | 17 °C |
+| Boost | Comfort + boost offset, at most the thermostat's maximum. Only without a native boost | 25 °C |
+
+An eco or away temperature entity with a valid state overrides the calculated value. Changing the
+comfort temperature entity updates all calculated levels at once.
 Reaction times (delays) apply to persons, presence, windows and the heating system. After a Home
 Assistant restart, states that have not changed since the start count as settled, so the delays do
 not start again.
@@ -49,24 +65,32 @@ UI. Changes that match the area target, such as a device confirming a command, a
 
 | Input mode | Radiator thermostats | Wall controllers |
 | ---------- | -------------------- | ---------------- |
-| Temporary | Kept until the next change in the area (default) | All thermostats follow it until the next change in the area (default) |
+| Temporary | Kept until the next change in the area (default) | All thermostats follow it until the next change in the area |
 | Read-only | Reverted at once, child lock on | Reverted at once, child lock on |
-| Persistent | | Written to the active comfort, eco or away entity |
+| Persistent | | Saved as the new temperature of the active level (default) |
 
-"Persistent" falls back to "Temporary" if the active level has no entity. In read-only mode, the
+"Persistent" writes to the active level's temperature entity. For a calculated eco or away level,
+it writes to the comfort temperature entity instead, as the change plus the offset, so the
+calculated level matches the change (the floor still applies). Without a matching entity, it falls
+back to "Temporary". In read-only mode, the
 child lock of the thermostat's device is turned on, if it has one: a `lock` or `switch` whose id
 contains `child_lock`, `childlock` or `child_protection`. In the other modes, the child lock is
 turned off when the automation is reloaded, for example after saving it, and left alone
 otherwise. While heating is off,
 changes on wall controllers are reverted. A change in the area is any event the blueprint reacts
 to, such as a schedule, a person, a window or the heating system. Selecting the `boost` preset on a
-wall controller boosts the whole area until the controller leaves the preset.
+wall controller, or turning on a boost switch on its device, boosts the whole area until the
+controller leaves the preset or the switch turns off.
 
 ## Boost
 
 A boost starts when the boost trigger turns on, or is pressed for an `input_button`, and lasts for
 the boost duration. An `input_boolean` trigger is turned off again when the boost ends. While a
 boost is active, heating off reasons still apply.
+
+A boost can also start on the wall controller, see [Changes on thermostats](#changes-on-thermostats).
+With a wall controller in the area, it is the room's input: a boost started on a single radiator
+thermostat is not passed on to the area, and it ends with the next change in the area.
 
 ## Calibration
 

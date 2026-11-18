@@ -101,7 +101,7 @@ to the whole area until then. While heating is off, changes on wall controllers 
 
 The thermostat's own boost preset, a boost switch and window inputs are recognised by their entity
 ids, see [Windows](how-it-works.md#windows) and [Boost](how-it-works.md#boost). Rename the entity id if
-yours is not found. Without a native option, boost uses the maximum temperature, and native window
+yours is not found. Without a native option, boost uses the comfort temperature plus the boost offset, and native window
 handling turns the thermostat off.
 
 ### Nothing happens after a restart

@@ -11,10 +11,12 @@
       area: living_room
       comfort_temperature: 21.5
       comfort_temperature_entity: input_number.living_room_comfort
-      eco_temperature: 18
+      eco_temperature_offset: 3.5
       eco_temperature_entity: input_number.living_room_eco
-      away_temperature: 16
+      away_temperature_offset: 6
       away_temperature_entity: input_number.living_room_away
+      boost_temperature_offset: 2.5
+      frost_protection_temperature: 7
       valves:
         - climate.living_room_radiator
       valve_behaviour: readonly
@@ -34,7 +36,6 @@
       windows:
         - binary_sensor.living_room_window
       window_behaviour: native
-      window_frost_protection_temperature: 7
       window_open_delay:
         seconds: 30
       window_close_delay:

@@ -16,12 +16,18 @@ area are used.
 
 | Input | Key | Default | Description |
 | ----- | --- | ------- | ----------- |
-| Comfort temperature | `comfort_temperature` | 22 °C | Used while a schedule, a person or presence asks for comfort |
-| Comfort temperature entity | `comfort_temperature_entity` | | `input_number` that overrides the static value |
-| Eco temperature | `eco_temperature` | 19 °C | Used otherwise |
-| Eco temperature entity | `eco_temperature_entity` | | `input_number` that overrides the static value |
-| Away temperature | `away_temperature` | 15 °C | Used in vacation mode or after the away delay |
-| Away temperature entity | `away_temperature_entity` | | `input_number` that overrides the static value |
+| Comfort temperature | `comfort_temperature` | 22 °C | Used while a schedule, a person or presence asks for comfort. Eco, away and boost are calculated from it |
+| Comfort temperature entity | `comfort_temperature_entity` | | Recommended. `input_number` that overrides the static value |
+| Eco offset | `eco_temperature_offset` | 3 °C | Eco = comfort − offset, at least 16 °C, never above comfort. Used otherwise |
+| Eco temperature entity | `eco_temperature_entity` | | Manual override. Empty: calculated |
+| Away offset | `away_temperature_offset` | 5 °C | Away = comfort − offset, at least 15 °C, never above comfort. Used in vacation mode or after the away delay |
+| Away temperature entity | `away_temperature_entity` | | Manual override. Empty: calculated |
+| Boost offset | `boost_temperature_offset` | 3 °C | Boost = comfort + offset, at most the thermostat's maximum. Only for thermostats without a boost preset or switch |
+| Frost protection temperature | `frost_protection_temperature` | 0 (thermostat minimum) | Used by the *Frost protection* window open behaviour |
+
+The floors of 16 °C (eco) and 15 °C (away) are fixed: lower setbacks rarely save more energy and
+risk damp and mould. With the comfort temperature at or below a floor, the level uses the comfort
+temperature. A temperature entity with a valid state always wins over the calculated value.
 
 ## Radiator thermostats
 
@@ -35,7 +41,7 @@ area are used.
 | Input | Key | Default | Description |
 | ----- | --- | ------- | ----------- |
 | Wall controllers | `controllers` | area: target temperature range | |
-| Wall controller input mode | `controller_behaviour` | `temporary` | `readonly`, `temporary` or `persistent`, see [Changes on thermostats](how-it-works.md#changes-on-thermostats) |
+| Wall controller input mode | `controller_behaviour` | `persistent` | `readonly`, `temporary` or `persistent`, see [Changes on thermostats](how-it-works.md#changes-on-thermostats) |
 
 ## Calibration
 
@@ -61,7 +67,6 @@ area are used.
 | ----- | --- | ------- | ----------- |
 | Window sensors | `windows` | area: window and door sensors | |
 | Window open behaviour | `window_behaviour` | `"off"` | `"off"`, `frost_protection` or `native`, see [Windows](how-it-works.md#windows) |
-| Frost protection temperature | `window_frost_protection_temperature` | 0 (thermostat minimum) | |
 | Window open delay | `window_open_delay` | 1 min | |
 | Window close delay | `window_close_delay` | 1 min | |
 
