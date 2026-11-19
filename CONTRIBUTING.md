@@ -128,6 +128,14 @@ Scripts in `scripts/` follow the
 [Google Shell Style Guide](https://google.github.io/styleguide/shellguide.html) and must
 pass [ShellCheck](https://www.shellcheck.net/).
 
+## Dependency updates
+
+[Dependabot](https://docs.github.com/code-security/dependabot) checks the GitHub Actions
+used in `.github/workflows/` once a week (`.github/dependabot.yml`). Minor and patch
+updates arrive as one grouped pull request, major updates as one pull request each, since
+they may need workflow changes. New releases are only proposed once they are seven days
+old. The commits use `ci(deps):`, so they never trigger a blueprint release.
+
 ## Commits and releases
 
 Releases are managed by [release-please](https://github.com/googleapis/release-please)
