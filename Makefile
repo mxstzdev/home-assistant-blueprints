@@ -8,7 +8,7 @@ SHELL := /bin/bash
 BLUEPRINT ?=
 # Home Assistant versions to validate against: min, stable, beta, dev or X.Y.Z.
 HA ?= min stable
-# Options for `make create`.
+# Options for `make create-blueprint`.
 NAME ?=
 DOMAIN ?= automation
 MIN_VERSION ?=
@@ -16,16 +16,16 @@ MIN_VERSION ?=
 BRANCH ?=
 ARGS ?=
 
-.PHONY: help lint test create create-branch open-pr delete-branch cleanup-repo
+.PHONY: help lint test-blueprints create-blueprint create-branch open-pr delete-branch cleanup-repo
 
 help: ## Show this help
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) \
-		| awk 'BEGIN {FS = ":.*## "} {printf "  %-15s %s\n", $$1, $$2}'
+		| awk 'BEGIN {FS = ":.*## "} {printf "  %-17s %s\n", $$1, $$2}'
 
 lint: ## Lint all YAML files
 	yamllint .
 
-test: ## Validate blueprints [BLUEPRINT=<dir>] [HA="min stable"]
+test-blueprints: ## Validate blueprints [BLUEPRINT=<dir>] [HA="min stable"]
 	@blueprints="$(BLUEPRINT)"; \
 	if [[ -z "$${blueprints}" ]]; then \
 		blueprints="$$(bash scripts/list-blueprints.sh | jq -r '.[]')"; \
@@ -37,7 +37,7 @@ test: ## Validate blueprints [BLUEPRINT=<dir>] [HA="min stable"]
 		done; \
 	done
 
-create: ## Create a blueprint NAME=<name> [DOMAIN=] [MIN_VERSION=]
+create-blueprint: ## Create a blueprint NAME=<name> [DOMAIN=] [MIN_VERSION=]
 	@if [[ -z "$(NAME)" ]]; then echo "NAME is required." >&2; exit 1; fi
 	@bash scripts/create-blueprint.sh -d "$(DOMAIN)" \
 		$(if $(MIN_VERSION),-m "$(MIN_VERSION)") "$(NAME)"
