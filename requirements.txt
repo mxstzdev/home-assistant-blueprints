@@ -1,2 +1,2 @@
 # Python tools for linting, kept up to date by Dependabot.
-yamllint==1.37.1
+yamllint==1.38.0
