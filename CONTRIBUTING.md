@@ -9,6 +9,8 @@ pull requests against `main`.
 - `make`, `bash` and `jq`
 - [yamllint](https://yamllint.readthedocs.io/) for `make lint` (`pip install -r requirements.txt`)
 - Docker for `make test` (or `HA_PYTHON`, see [Validation](#validation))
+- [GitHub CLI](https://cli.github.com/) (`gh`), signed in with `gh auth login`, for the
+  [pull request tasks](#branches-and-pull-requests)
 
 Run `make help` for all tasks.
 
@@ -139,6 +141,44 @@ trigger a blueprint release.
 
 Actions are pinned to a full commit SHA, with the version as a comment, for example
 `actions/checkout@<sha> # v5.1.0`. Dependabot updates both. Pin new actions the same way.
+
+## Branches and pull requests
+
+Branch names follow `<scope>/<topic>`, both in lowercase `kebab-case`:
+
+- `<scope>` is the blueprint name for changes to one blueprint, for example
+  `area-heating-control/sync-trv-setpoints`. Otherwise it is one of `ci`, `docs`, `repo` or
+  `scripts`, for example `scripts/github-pr`.
+- `<topic>` names the change in a few words.
+
+The pull request tasks wrap `git` and `gh` (`scripts/github-pr.sh`):
+
+```sh
+make create-branch BRANCH=<scope>/<topic>   # new branch from the latest main
+make open-pr                                # push with upstream, open the pull request
+make open-pr ARGS="--draft"                 # extra arguments go to `gh pr create`
+make delete-branch                          # after merge: update main, delete the branch
+make cleanup-repo                           # delete leftovers of closed pull requests
+```
+
+- `create-branch` checks the scope against the blueprint folders. Without `BRANCH`, or with
+  an invalid one, it offers a menu of scopes and asks for the topic, which may be plain text
+  such as `Dependabot integration` (turned into `dependabot-integration`).
+- `open-pr` works on the current branch or `BRANCH=<name>`, without switching to it. It takes
+  title and description from the commits unless `ARGS` sets them, and only prints the link if
+  the pull request is already open. It refuses `main`, names outside the schema (such as bot
+  branches) and branches whose pull request is already merged or closed. It never force-pushes.
+- `delete-branch` works on the current branch or `BRANCH=<name>`. It only deletes a branch
+  whose pull request is merged, or closed after asking, and whose commits are all part of
+  that pull request. Rebase merges rewrite commits, so unpushed work is detected against
+  the pull request, not against `main`.
+- `cleanup-repo` removes the leftovers of merged or closed pull requests: local branches,
+  and branches that only exist on GitHub. It lists them and asks first. It keeps branches
+  without a pull request, the current branch, branches with commits that are not in their
+  pull request and remote names outside the schema, such as bot branches.
+
+GitHub deletes merged branches automatically. Both tasks also delete the remote branch if
+it still exists, for example after a pull request was closed without merging.
 
 ## Commits and releases
 
