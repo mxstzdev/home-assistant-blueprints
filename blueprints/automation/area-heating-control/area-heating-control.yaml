@@ -1501,6 +1501,10 @@ actions:
           {% set targets = valve_ids + (controller_ids if sensor_ids | count > 0 else []) %}
           {% for id in targets if id in external_inputs and not run_reset %}
             {% set input = external_inputs[id] %}
+            {# Limited to the thermostat's maximum, which it may not accept otherwise. #}
+            {% set limit = state_attr(id, 'max_temp') %}
+            {% set temperature = [area_temperature, limit] | min if limit is number
+                 else area_temperature %}
             {% if input.select and not is_state(input.select, 'external') %}
               {% set ns.tasks = ns.tasks + [{'action': 'select.select_option',
                    'data': {'entity_id': input.select, 'option': 'external'}}] %}
@@ -1509,7 +1513,7 @@ actions:
             {% set scale = 100 if state_attr(input.number, 'max') | float(100) > 100 else 1 %}
             {% set step = state_attr(input.number, 'step') | float(0.1) %}
             {% set precision = (step | string).split('.')[1] | length if '.' in step | string else 0 %}
-            {% set value = ((area_temperature * scale / step) | round(0) * step) | round(precision) %}
+            {% set value = ((temperature * scale / step) | round(0) * step) | round(precision) %}
             {% set current = states(input.number) | float(none) %}
             {% set age = now_ts - as_timestamp((expand(input.number) | first).last_updated) %}
             {# Devices fall back to their own sensor without regular updates. #}
@@ -1534,7 +1538,10 @@ actions:
                 {% set value = 0 %}
               {% else %}
                 {% set measured = state_attr(id, 'current_temperature') | float(none) %}
-                {% set value = none if measured is none else offset - (measured - area_temperature) %}
+                {% set limit = state_attr(id, 'max_temp') %}
+                {% set temperature = [area_temperature, limit] | min if limit is number
+                     else area_temperature %}
+                {% set value = none if measured is none else offset - (measured - temperature) %}
               {% endif %}
               {% if value is not none %}
                 {% set value = (([[value, low] | max, high] | min / step) | round(0) * step)

@@ -115,4 +115,5 @@ temperature:
 
 The area temperature is the median of the temperature sensors, or of the wall controllers if there
 are no sensors. Sensors of a wall controller and excluded temperature sensors are never used as
-temperature sensors. Without sensors and wall controllers, calibration is skipped.
+temperature sensors. Without sensors and wall controllers, calibration is skipped. Each thermostat
+gets at most its own maximum temperature (`max_temp`), even if the area is warmer.
