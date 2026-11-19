@@ -12,12 +12,15 @@ HA ?= min stable
 NAME ?=
 DOMAIN ?= automation
 MIN_VERSION ?=
+# Options for the pull request targets, e.g. BRANCH=scripts/github-pr ARGS=--draft.
+BRANCH ?=
+ARGS ?=
 
-.PHONY: help lint test create
+.PHONY: help lint test create create-branch open-pr delete-branch cleanup-repo
 
 help: ## Show this help
-	@grep -E '^[a-z]+:.*## ' $(MAKEFILE_LIST) \
-		| awk 'BEGIN {FS = ":.*## "} {printf "  %-8s %s\n", $$1, $$2}'
+	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) \
+		| awk 'BEGIN {FS = ":.*## "} {printf "  %-15s %s\n", $$1, $$2}'
 
 lint: ## Lint all YAML files
 	yamllint .
@@ -38,3 +41,15 @@ create: ## Create a blueprint NAME=<name> [DOMAIN=] [MIN_VERSION=]
 	@if [[ -z "$(NAME)" ]]; then echo "NAME is required." >&2; exit 1; fi
 	@bash scripts/create-blueprint.sh -d "$(DOMAIN)" \
 		$(if $(MIN_VERSION),-m "$(MIN_VERSION)") "$(NAME)"
+
+create-branch: ## Create a branch from main [BRANCH=<scope>/<topic>]
+	@bash scripts/github-pr.sh create-branch $(if $(BRANCH),"$(BRANCH)")
+
+open-pr: ## Push a branch and open its pull request [BRANCH=] [ARGS=<gh args>]
+	@bash scripts/github-pr.sh open-pr $(if $(BRANCH),"$(BRANCH)") -- $(ARGS)
+
+delete-branch: ## Delete a branch once its pull request is closed [BRANCH=]
+	@bash scripts/github-pr.sh delete-branch $(if $(BRANCH),"$(BRANCH)")
+
+cleanup-repo: ## Delete leftover branches of closed pull requests
+	@bash scripts/github-pr.sh cleanup-repo
