@@ -8,7 +8,7 @@ pull requests against `main`.
 
 - `make`, `bash` and `jq`
 - [yamllint](https://yamllint.readthedocs.io/) for `make lint` (`pip install -r requirements.txt`)
-- Docker for `make test` (or `HA_PYTHON`, see [Validation](#validation))
+- Docker for `make test-blueprints` (or `HA_PYTHON`, see [Validation](#validation))
 - [GitHub CLI](https://cli.github.com/) (`gh`), signed in with `gh auth login`, for the
   [pull request tasks](#branches-and-pull-requests)
 
@@ -36,7 +36,7 @@ scripts/                    # helpers used by make and CI
    `automation` and `MIN_VERSION` to `2025.1.0`:
 
    ```sh
-   make create NAME=motion-light DOMAIN=automation MIN_VERSION=2025.6.0
+   make create-blueprint NAME=motion-light DOMAIN=automation MIN_VERSION=2025.6.0
    ```
 
    This creates the folder above, registers the blueprint in
@@ -111,10 +111,10 @@ dev builds included.
 Run it locally:
 
 ```sh
-make test                                          # all blueprints, min and stable
-make test BLUEPRINT=blueprints/automation/<name>   # one blueprint
-make test HA=dev                                   # the latest dev build
-make test HA=2025.6.0                              # a specific version
+make test-blueprints                                          # all blueprints, min and stable
+make test-blueprints BLUEPRINT=blueprints/automation/<name>   # one blueprint
+make test-blueprints HA=dev                                   # the latest dev build
+make test-blueprints HA=2025.6.0                              # a specific version
 ```
 
 `min` uses the `min_version` image, so it fails for a `min_version` that is not released
