@@ -85,6 +85,7 @@ temperature. A temperature entity with a valid state always wins over the calcul
 | ----- | --- | ------- | ----------- |
 | Calibration | `calibration` | `true` | See [Calibration](how-it-works.md#calibration) |
 | Temperature sensors | `temperature_sensors` | area: temperature sensors not on a thermostat | Sensors of a wall controller are always ignored |
+| Excluded temperature sensors | `excluded_temperature_sensors` | | Never used for the area temperature, for example a Zigbee coordinator's chip temperature |
 | Calibration delta | `calibration_delta` | 0.5 °C | Minimum offset change |
 | Calibration timeout | `calibration_timeout` | 5 min | Minimum time between two offset changes per thermostat |
 | Calibration reset | `calibration_reset` | | Resets all offsets to 0 when it turns on |

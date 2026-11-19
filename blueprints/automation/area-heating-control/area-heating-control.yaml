@@ -2,7 +2,7 @@ blueprint:
   name: Area Heating Control 2.0
   # yamllint disable rule:line-length
   description: |
-    [![Version](https://img.shields.io/static/v1?label=version&message=2.2.0&color=blue)](https://github.com/mxstzdev/home-assistant-blueprints/blob/main/blueprints/automation/area-heating-control/CHANGELOG.md) <!-- x-release-please-version -->
+    [![Version](https://img.shields.io/static/v1?label=version&message=2.1.0&color=blue)](https://github.com/mxstzdev/home-assistant-blueprints/blob/main/blueprints/automation/area-heating-control/CHANGELOG.md) <!-- x-release-please-version -->
 
     Blueprint for advanced, area-based heating control automations. It uses Home Assistant's [areas](https://www.home-assistant.io/docs/organizing/areas/) to find the thermostats and sensors of a room and keeps them at the right temperature.
 
@@ -423,6 +423,17 @@ blueprint:
               filter:
                 - domain: sensor
                   device_class: temperature
+        excluded_temperature_sensors:
+          name: Excluded temperature sensors
+          description: |
+            Temperature sensors that are never used for the area temperature, for example the chip temperature of a Zigbee coordinator.
+          default: []
+          selector:
+            entity:
+              multiple: true
+              filter:
+                - domain: sensor
+                  device_class: temperature
         calibration_delta:
           name: Calibration delta
           description: The minimum offset change that is written to a thermostat.
@@ -618,6 +629,7 @@ trigger_variables:
   controller_behaviour: !input controller_behaviour
   calibration: !input calibration
   temperature_sensors: !input temperature_sensors
+  excluded_temperature_sensors: !input excluded_temperature_sensors
   calibration_delta: !input calibration_delta
   calibration_timeout: !input calibration_timeout
   calibration_reset: !input calibration_reset
@@ -982,8 +994,9 @@ actions:
         {{ ns.ids | unique | list }}
       controller_device_ids: >
         {{ controller_ids | map('device_id') | select | unique | list }}
-      # Wall controller sensors are skipped even when selected: their own temperature is the
-      # fallback below, and counting it twice would skew the area temperature.
+      # Wall controller and excluded sensors are skipped even when selected. A wall controller's
+      # own temperature is the fallback below, and counting it twice would skew the area
+      # temperature.
       sensor_ids: >
         {% set ns = namespace(ids=[]) %}
         {% if temperature_sensors | count > 0 %}
@@ -992,7 +1005,7 @@ actions:
           {% set candidates = area_entities(area) | select('match', 'sensor[.]')
                | select('is_state_attr', 'device_class', 'temperature') | list %}
         {% endif %}
-        {% for id in candidates %}
+        {% for id in candidates | reject('in', excluded_temperature_sensors) %}
           {% if states(id) | is_number and device_id(id) not in controller_device_ids
                 and (temperature_sensors | count > 0 or device_id(id) not in thermostat_device_ids) %}
             {% set ns.ids = ns.ids + [id] %}

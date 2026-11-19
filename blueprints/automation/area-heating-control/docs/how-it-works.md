@@ -114,5 +114,5 @@ temperature:
   the calibration delta and the last change is older than the calibration timeout.
 
 The area temperature is the median of the temperature sensors, or of the wall controllers if there
-are no sensors. Sensors of a wall controller are never used as temperature sensors. Without sensors
-and wall controllers, calibration is skipped.
+are no sensors. Sensors of a wall controller and excluded temperature sensors are never used as
+temperature sensors. Without sensors and wall controllers, calibration is skipped.

@@ -97,9 +97,51 @@ to the whole area until then. While heating is off, changes on wall controllers 
 - **There is no area temperature.** Without temperature sensors and wall controllers, there is
   nothing to calibrate against.
 
-### Boost or the window input is not used natively
+### The area temperature is wrong
 
-The thermostat's own boost preset, a boost switch and window inputs are recognised by their entity
+- **An unrelated sensor is used.** Auto-discovery picks up every temperat### The area temperature is wrong
+
+Auto-discovery uses every temperature sensor in the area that does not belong to a thermostat,
+including sensors that do not measure the room, such as the chip temperature of a Zigbee
+coordinator. A few of them are enough to make the median implausible.
+
+To find them, paste this template into **Developer tools → Template**, with your area id in the
+first line. It lists the sensors that auto-discovery uses and flags readings above `limit` or more
+than `deviation` °C away from the median:
+
+```jinja
+{% set area = 'living_room' %}
+{% set deviation = 3 %}
+{% set limit = 30 %}
+{% set ns = namespace(ids=[]) %}
+{% for id in area_entities(area) | select('match', 'sensor[.]')
+     | select('is_state_attr', 'device_class', 'temperature') %}
+  {% set device = device_id(id) %}
+  {% if states(id) | is_number
+        and not (device and device_entities(device) | select('match', 'climate[.]') | list) %}
+    {% set ns.ids = ns.ids + [id] %}
+  {% endif %}
+{% endfor %}
+{% set values = ns.ids | map('states') | map('float') | list %}
+{% set median = values | median if values else none %}
+Median: {{ median }}
+{% for id in ns.ids %}
+{%- set value = states(id) | float %}
+- {{ id }} ({{ device_attr(device_id(id), 'name') or 'no device' }}): {{ value }}
+  {{- ' ⚠️ above ' ~ limit if value > limit
+      else ' ⚠️ ' ~ deviation ~ ' °C off the median' if (value - median) | abs > deviation }}
+{% endfor %}
+```
+
+Then keep the sensor out of the area temperature in one of these ways:
+
+- **Exclude it:** add it to *Excluded temperature sensors*. The sensor stays available for
+  everything else.
+- **Disable it:** if you don't need the sensor at all, disable the entity in
+  **Settings → Devices & services → Entities**. Disabled entities have no state and are skipped.
+- **Select the sensors yourself:** under *Temperature sensors*, which turns off auto-discovery.
+
+ndow inputs are recognised by their entity
 ids, see [Windows](how-it-works.md#windows) and [Boost](how-it-works.md#boost). Rename the entity id if
 yours is not found. Without a native option, boost uses the comfort temperature plus the boost offset, and native window
 handling turns the thermostat off.
