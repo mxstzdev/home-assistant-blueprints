@@ -136,6 +136,9 @@ updates arrive as one grouped pull request, major updates as one pull request ea
 they may need workflow changes. New releases are only proposed once they are seven days
 old. The commits use `ci(deps):`, so they never trigger a blueprint release.
 
+Actions are pinned to a full commit SHA, with the version as a comment, for example
+`actions/checkout@<sha> # v5.1.0`. Dependabot updates both. Pin new actions the same way.
+
 ## Commits and releases
 
 Releases are managed by [release-please](https://github.com/googleapis/release-please)
