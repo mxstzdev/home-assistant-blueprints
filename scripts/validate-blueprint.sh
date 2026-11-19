@@ -6,23 +6,29 @@
 # The blueprint and its tests/<domain>.yaml are copied into a throwaway
 # configuration, which is checked inside the official Home Assistant image.
 # Set HA_PYTHON to a Python with the homeassistant package to skip Docker.
+#
+# Can be sourced for read_min_version without running the checks.
 
 set -euo pipefail
 
 readonly NAMESPACE="mxstzdev"
 readonly IMAGE="ghcr.io/home-assistant/home-assistant"
-USAGE="Usage: $(basename "$0") <blueprint-dir> <min|stable|X.Y.Z>"
+USAGE="Usage: $(basename "$0") <blueprint-dir> <min|stable|beta|dev|version>"
 readonly USAGE
 readonly MIN_VERSION_SED="s/^[[:space:]]+min_version:[[:space:]]*[\"']?\
 ([0-9]+\.[0-9]+(\.[0-9]+)?)[\"']?.*/\1/p"
-# check_config ignores min_version, so it is compared explicitly.
+# check_config ignores min_version, so it is compared explicitly. A beta or
+# dev build counts as the release it leads to, e.g. 2026.12.0.dev... meets
+# 2026.12.0, so blueprints for an upcoming release can be checked.
 readonly VERSION_CHECK='
+import re
 import sys
 from awesomeversion import AwesomeVersion
 from homeassistant.const import __version__ as current
 required = sys.argv[1]
+release = re.match(r"[0-9]+[.][0-9]+[.][0-9]+", current).group()
 print(f"Home Assistant {current}")
-if AwesomeVersion(current) < AwesomeVersion(required):
+if AwesomeVersion(release) < AwesomeVersion(required):
     print(f"ERROR: Home Assistant {current} is older than {required}")
 '
 # check_config reads the blueprint as written. Importing it saves the
@@ -173,9 +179,10 @@ main() {
   local version
   case "${target}" in
     min) version="${min_version}" ;;
-    stable | [0-9]*.[0-9]*.[0-9]*) version="${target}" ;;
+    stable | beta | dev | [0-9]*.[0-9]*.[0-9]*) version="${target}" ;;
     *)
-      err "version must be 'min', 'stable' or X.Y.Z, got '${target}'"
+      err "version must be 'min', 'stable', 'beta', 'dev' or an image tag" \
+        "such as X.Y.Z, got '${target}'"
       exit 1
       ;;
   esac
@@ -207,4 +214,6 @@ main() {
   echo "OK: ${blueprint} is valid on Home Assistant ${version}"
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
+fi

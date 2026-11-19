@@ -75,8 +75,8 @@ scripts/                    # helpers used by make and CI
 Every pull request and push to `main` runs:
 
 - **yamllint** over the whole repository (`.yamllint`).
-- **check_config** for each blueprint, once against its declared `min_version` and once
-  against the current stable Home Assistant release. The blueprint and its
+- **check_config** for each blueprint against its declared `min_version`, the current
+  stable Home Assistant release and the latest `dev` build. The blueprint and its
   `tests/<domain>.yaml` are loaded into a minimal configuration inside the official
   container image, so schema errors, invalid triggers, conditions or actions, missing
   inputs, and features newer than `min_version` all fail the build. An import round trip
@@ -86,15 +86,37 @@ Every pull request and push to `main` runs:
   domain must pass yamllint and check_config, so the skeleton never drifts from these
   conventions.
 
-The stable check also runs weekly to catch breaking changes in new Home Assistant releases.
+The checks also run weekly to catch breaking changes in new Home Assistant releases.
+
+How each version is picked:
+
+| Check | Runs on | Blocks |
+| --- | --- | --- |
+| min | the `min_version` image; left out when it equals stable | every run |
+| stable | the current stable release | every run |
+| dev | the latest nightly of the upcoming release | scheduled and manual runs only |
+
+A failing dev check shows on pull requests as a warning, which leaves time to fix the
+blueprint before the release.
+
+A `min_version` that is not released yet, e.g. for a feature of the upcoming release, is
+checked on the beta of that release, or on `dev` while there is no beta. That check blocks
+every run, and the stable check is skipped with a warning. A `min_version` that no beta or
+dev build leads to fails the build. Keep in mind that merging such a blueprint releases it,
+and Home Assistant refuses to import it on any version older than `min_version`, beta and
+dev builds included.
 
 Run it locally:
 
 ```sh
 make test                                          # all blueprints, min and stable
 make test BLUEPRINT=blueprints/automation/<name>   # one blueprint
+make test HA=dev                                   # the latest dev build
 make test HA=2025.6.0                              # a specific version
 ```
+
+`min` uses the `min_version` image, so it fails for a `min_version` that is not released
+yet. Use `HA=beta` or `HA=dev` for those.
 
 Without Docker, set `HA_PYTHON` to a Python interpreter that has the `homeassistant`
 package installed. The installed version is then used for every run, and only compared

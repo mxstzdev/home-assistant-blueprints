@@ -6,7 +6,7 @@ SHELL := /bin/bash
 
 # Validate only this blueprint folder, e.g. blueprints/automation/motion-light.
 BLUEPRINT ?=
-# Home Assistant versions to validate against: min, stable or X.Y.Z.
+# Home Assistant versions to validate against: min, stable, beta, dev or X.Y.Z.
 HA ?= min stable
 # Options for `make create`.
 NAME ?=
