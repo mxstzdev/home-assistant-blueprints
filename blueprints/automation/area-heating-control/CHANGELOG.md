@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.3.0](https://github.com/mxstzdev/home-assistant-blueprints/compare/area-heating-control/2.2.0...area-heating-control/2.3.0) (2026-11-19)
+
+
+### Added
+
+* add excluded temperature sensors input ([7fdaf00](https://github.com/mxstzdev/home-assistant-blueprints/commit/7fdaf0065f170e3d9617187e821f4869f0a9a1f1))
+
+
+### Fixed
+
+* limit calibration temperature to each thermostat's maximum ([860ae56](https://github.com/mxstzdev/home-assistant-blueprints/commit/860ae566351d2cbc7dcfa81c4de4f2516008fd96))
+
 ## [2.2.0](https://github.com/mxstzdev/home-assistant-blueprints/compare/area-heating-control/2.1.1...area-heating-control/2.2.0) (2026-11-18)
 
 
