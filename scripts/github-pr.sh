@@ -3,7 +3,8 @@
 # Runs the GitHub pull request workflow: creates a branch, opens a pull
 # request for it and removes the branch once its pull request is closed.
 #
-# Needs git and the GitHub CLI (gh), signed in with `gh auth login`.
+# Needs git and the GitHub CLI (gh), signed in with `gh auth login`. Works
+# with bash 3.2 and BSD tools, so it runs on stock macOS.
 #
 # Commands:
 #   create-branch [<scope>/<topic>] Create a branch from the latest default
@@ -23,7 +24,8 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 readonly ROOT_DIR
 readonly REMOTE="origin"
 # Scopes for branches that are not tied to one blueprint.
-readonly GENERAL_SCOPES=(ci docs repo scripts)
+GENERAL_SCOPES=(ci docs repo scripts)
+readonly GENERAL_SCOPES
 readonly NAME_PATTERN='^[a-z0-9]+(-[a-z0-9]+)*$'
 USAGE="Usage: $(basename "$0") create-branch [<scope>/<topic>] | open-pr [<branch>] [-- <gh args>] | delete-branch [<branch>] | cleanup-repo"
 readonly USAGE
@@ -37,6 +39,17 @@ readonly USAGE
 #######################################
 err() {
   echo "error: $*" >&2
+}
+
+#######################################
+# Prints text in lowercase.
+# Arguments:
+#   Text to convert.
+# Outputs:
+#   Writes the text to STDOUT.
+#######################################
+to_lower() {
+  LC_ALL=C tr '[:upper:]' '[:lower:]' <<< "$1"
 }
 
 #######################################
@@ -99,11 +112,14 @@ require_clean_tree() {
 #   Writes one scope per line to STDOUT.
 #######################################
 branch_scopes() {
+  local dir
+
   printf '%s\n' "${GENERAL_SCOPES[@]}"
-  if [[ -d "${ROOT_DIR}/blueprints" ]]; then
-    find "${ROOT_DIR}/blueprints" -mindepth 2 -maxdepth 2 -type d -printf '%f\n' \
-      | LC_ALL=C sort
-  fi
+  for dir in "${ROOT_DIR}"/blueprints/*/*/; do
+    [[ -d "${dir}" ]] || continue
+    dir="${dir%/}"
+    echo "${dir##*/}"
+  done | LC_ALL=C sort
 }
 
 #######################################
@@ -128,8 +144,8 @@ validate_branch_name() {
     return 1
   fi
   local scopes
-  mapfile -t scopes < <(branch_scopes)
-  if [[ ! " ${scopes[*]} " == *" ${scope} "* ]]; then
+  scopes="$(branch_scopes)"
+  if [[ $'\n'"${scopes}"$'\n' != *$'\n'"${scope}"$'\n'* ]]; then
     err "unknown scope '${scope}', use a blueprint name or one of: ${GENERAL_SCOPES[*]}"
     return 1
   fi
@@ -161,10 +177,12 @@ to_kebab_case() {
 #   Writes the prompts to STDERR and the branch name to STDOUT.
 #######################################
 prompt_branch_name() {
-  local scope topic
-  local scopes
+  local scope topic line
+  local scopes=()
 
-  mapfile -t scopes < <(branch_scopes)
+  while IFS= read -r line; do
+    scopes+=("${line}")
+  done < <(branch_scopes)
   PS3="Scope: "
   select scope in "${scopes[@]}"; do
     [[ -n "${scope}" ]] && break
@@ -332,7 +350,7 @@ open_pr() {
   if info="$(pr_info "${branch}")"; then
     read -r number state head url <<< "${info}"
     if [[ "${state}" != OPEN ]]; then
-      err "pull request ${url} is already ${state,,}, use delete-branch"
+      err "pull request ${url} is already $(to_lower "${state}"), use delete-branch"
       exit 1
     fi
   fi
@@ -387,7 +405,7 @@ delete_branch() {
       fi
       ;;
     *)
-      err "pull request ${url} is still ${state,,}"
+      err "pull request ${url} is still $(to_lower "${state}")"
       exit 1
       ;;
   esac
@@ -432,7 +450,7 @@ cleanup_repo() {
     elif ! is_tip_in_pr "${branch}" "${number}" "${head}"; then
       echo "Skipped '${branch}': it has commits that are not in ${url}."
     else
-      printf '  %-40s %-6s %-7s %s\n' "${branch}" local "${state,,}" "${url}"
+      printf '  %-40s %-6s %-7s %s\n' "${branch}" local "$(to_lower "${state}")" "${url}"
       local_branches+=("${branch}")
     fi
   done < <(git for-each-ref --format='%(refname:lstrip=2)' refs/heads)
@@ -448,7 +466,7 @@ cleanup_repo() {
     if ! is_tip_in_pr "${branch}" "${number}" "${head}"; then
       echo "Skipped remote '${branch}': it has commits that are not in ${url}."
     else
-      printf '  %-40s %-6s %-7s %s\n' "${branch}" remote "${state,,}" "${url}"
+      printf '  %-40s %-6s %-7s %s\n' "${branch}" remote "$(to_lower "${state}")" "${url}"
       remote_branches+=("${branch}")
     fi
   done < <(git for-each-ref --format='%(refname:lstrip=3)' "refs/remotes/${REMOTE}")
@@ -462,10 +480,11 @@ cleanup_repo() {
     return
   fi
 
-  for branch in "${local_branches[@]}"; do
+  # The ${a[@]+...} form keeps empty arrays working under `set -u` in bash < 4.4.
+  for branch in ${local_branches[@]+"${local_branches[@]}"}; do
     remove_branch "${branch}"
   done
-  for branch in "${remote_branches[@]}"; do
+  for branch in ${remote_branches[@]+"${remote_branches[@]}"}; do
     git push "${REMOTE}" --delete "${branch}"
   done
   update_default_branch "${base}"
