@@ -100,7 +100,11 @@ jobs:
       - run: bash scripts/create-blueprint.sh -d "$DOMAIN" scaffold-check
         env:
           DOMAIN: ${{ matrix.domain }}
-      - run: pipx run --spec yamllint==1.37.1 yamllint --strict --format github blueprints
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - run: pip install -r requirements.txt
+      - run: yamllint --strict --format github blueprints
       - run: bash scripts/validate-blueprint.sh "blueprints/$DOMAIN/scaffold-check" "$HA"
         env:
           DOMAIN: ${{ matrix.domain }}

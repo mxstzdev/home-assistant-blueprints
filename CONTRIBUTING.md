@@ -7,7 +7,7 @@ pull requests against `main`.
 ## Requirements
 
 - `make`, `bash` and `jq`
-- [yamllint](https://yamllint.readthedocs.io/) for `make lint`
+- [yamllint](https://yamllint.readthedocs.io/) for `make lint` (`pip install -r requirements.txt`)
 - Docker for `make test` (or `HA_PYTHON`, see [Validation](#validation))
 
 Run `make help` for all tasks.
@@ -131,10 +131,11 @@ pass [ShellCheck](https://www.shellcheck.net/).
 ## Dependency updates
 
 [Dependabot](https://docs.github.com/code-security/dependabot) checks the GitHub Actions
-used in `.github/workflows/` once a week (`.github/dependabot.yml`). Minor and patch
-updates arrive as one grouped pull request, major updates as one pull request each, since
-they may need workflow changes. New releases are only proposed once they are seven days
-old. The commits use `ci(deps):`, so they never trigger a blueprint release.
+used in `.github/workflows/` and the Python tools in `requirements.txt` once a week
+(`.github/dependabot.yml`). Minor and patch updates arrive as one grouped pull request,
+major updates as one pull request each, since they may need workflow changes. New releases
+are only proposed once they are seven days old. The commits use `ci(deps):`, so they never
+trigger a blueprint release.
 
 Actions are pinned to a full commit SHA, with the version as a comment, for example
 `actions/checkout@<sha> # v5.1.0`. Dependabot updates both. Pin new actions the same way.
