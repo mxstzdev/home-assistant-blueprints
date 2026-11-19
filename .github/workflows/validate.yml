@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
   schedule:
-    # Weekly, to catch breaking changes in new stable Home Assistant releases.
+    # Weekly, to catch breaking changes in new stable and upcoming Home Assistant releases.
     - cron: "0 5 * * 1"
   workflow_dispatch:
 
@@ -17,36 +17,66 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Picks the Home Assistant versions per blueprint, see scripts/resolve-ha-targets.sh.
   discover:
     runs-on: ubuntu-latest
     outputs:
-      blueprints: ${{ steps.list.outputs.blueprints }}
+      blocking: ${{ steps.targets.outputs.blocking }}
+      scheduled: ${{ steps.targets.outputs.scheduled }}
     steps:
       - uses: actions/checkout@v5
-      - id: list
+      - id: targets
         # A separate assignment makes the step fail if the script fails.
         run: |
-          blueprints="$(bash scripts/list-blueprints.sh)"
-          echo "blueprints=${blueprints}" >> "$GITHUB_OUTPUT"
+          targets="$(bash scripts/resolve-ha-targets.sh)"
+          echo "blocking=$(jq -c .blocking <<< "${targets}")" >> "$GITHUB_OUTPUT"
+          echo "scheduled=$(jq -c .scheduled <<< "${targets}")" >> "$GITHUB_OUTPUT"
 
+  # Must pass on every run.
   check-config:
     needs: discover
     if: >-
-      needs.discover.outputs.blueprints != ''
-      && needs.discover.outputs.blueprints != '[]'
-    name: ${{ matrix.blueprint }} @ ${{ matrix.ha }}
+      needs.discover.outputs.blocking != ''
+      && needs.discover.outputs.blocking != '[]'
+    name: ${{ matrix.blueprint }} @ ${{ matrix.ha }} (${{ matrix.version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        blueprint: ${{ fromJSON(needs.discover.outputs.blueprints) }}
-        ha: [min, stable]
+        include: ${{ fromJSON(needs.discover.outputs.blocking) }}
     steps:
-      - uses: actions/checkout@v5
-      - run: bash scripts/validate-blueprint.sh "$BLUEPRINT" "$HA"
+      - if: matrix.skip != ''
+        run: echo "::warning::Skipped ${BLUEPRINT} @ ${HA} (${SKIP})"
         env:
           BLUEPRINT: ${{ matrix.blueprint }}
           HA: ${{ matrix.ha }}
+          SKIP: ${{ matrix.skip }}
+      - if: matrix.skip == ''
+        uses: actions/checkout@v5
+      - if: matrix.skip == ''
+        run: bash scripts/validate-blueprint.sh "$BLUEPRINT" "$VERSION"
+        env:
+          BLUEPRINT: ${{ matrix.blueprint }}
+          VERSION: ${{ matrix.version }}
+
+  # The upcoming release only fails scheduled and manual runs, see result.
+  check-dev:
+    needs: discover
+    if: >-
+      needs.discover.outputs.scheduled != ''
+      && needs.discover.outputs.scheduled != '[]'
+    name: ${{ matrix.blueprint }} @ ${{ matrix.ha }} (${{ matrix.version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.discover.outputs.scheduled) }}
+    steps:
+      - uses: actions/checkout@v5
+      - run: bash scripts/validate-blueprint.sh "$BLUEPRINT" "$VERSION"
+        env:
+          BLUEPRINT: ${{ matrix.blueprint }}
+          VERSION: ${{ matrix.version }}
 
   # Keeps scripts/create-blueprint.sh in line with the conventions.
   scaffold:
@@ -70,7 +100,7 @@ jobs:
 
   # Single, stable check name for branch protection.
   result:
-    needs: [discover, check-config, scaffold]
+    needs: [discover, check-config, check-dev, scaffold]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -80,7 +110,17 @@ jobs:
             echo "::error::Blueprint validation failed"
             exit 1
           fi
+          if [[ ! "$DEV" =~ ^(success|skipped)$ ]]; then
+            message="Blueprint validation failed on the upcoming Home Assistant release"
+            if [[ "$EVENT" =~ ^(schedule|workflow_dispatch)$ ]]; then
+              echo "::error::${message}"
+              exit 1
+            fi
+            echo "::warning::${message}, which only fails scheduled and manual runs"
+          fi
         env:
           DISCOVER: ${{ needs.discover.result }}
           CHECK: ${{ needs.check-config.result }}
+          DEV: ${{ needs.check-dev.result }}
           SCAFFOLD: ${{ needs.scaffold.result }}
+          EVENT: ${{ github.event_name }}
