@@ -24,7 +24,7 @@ jobs:
       blocking: ${{ steps.targets.outputs.blocking }}
       scheduled: ${{ steps.targets.outputs.scheduled }}
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - id: targets
@@ -54,7 +54,7 @@ jobs:
           HA: ${{ matrix.ha }}
           SKIP: ${{ matrix.skip }}
       - if: matrix.skip == ''
-        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - if: matrix.skip == ''
@@ -76,7 +76,7 @@ jobs:
       matrix:
         include: ${{ fromJSON(needs.discover.outputs.scheduled) }}
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - run: bash scripts/validate-blueprint.sh "$BLUEPRINT" "$VERSION"
@@ -94,7 +94,7 @@ jobs:
         domain: [automation, script]
         ha: [min, stable]
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - run: bash scripts/create-blueprint.sh -d "$DOMAIN" scaffold-check
