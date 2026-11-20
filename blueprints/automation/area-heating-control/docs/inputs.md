@@ -34,6 +34,12 @@ temperature. A temperature entity with a valid state always wins over the calcul
 | Input | Key | Default | Description |
 | ----- | --- | ------- | ----------- |
 | Schedules | `schedules` | | `schedule` entities. Comfort while any is on |
+| PTO schedules | `pto_schedules` | | `schedule` entities used instead on PTO days. Empty: the schedules apply every day |
+| Workday entity | `workday_entity` | | Workday `binary_sensor` or `calendar`. Off: PTO day |
+| PTO calendars | `pto_calendars` | | `calendar` entities, such as Holiday and your own days off. Active event: PTO day |
+
+A day is a **PTO** (paid time off) day while the workday entity is off or any PTO calendar has an
+active event. An unavailable workday entity counts as a workday.
 
 ## Persons and presence
 

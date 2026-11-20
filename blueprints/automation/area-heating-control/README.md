@@ -9,7 +9,7 @@ a room and keeps them at the right temperature.
 - 🌱 Auto-calculated temperatures: set your comfort temperature, and eco, away and boost follow it
   (overridable with custom entities)
 - 🕵️ Entity auto-discovery for thermostats, window sensors and temperature sensors
-- 🗓️ Multiple heating schedules, e.g. one per household member
+- 🗓️ Multiple heating schedules, e.g. for PTO days or one per household member
 - 👥 Persons and presence detection, including guest and vacation mode
 - 🪟 Open window detection with heating off or frost protection
 - ⚙️ Thermostat calibration against external temperature sensors
