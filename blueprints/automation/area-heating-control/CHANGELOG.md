@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.0](https://github.com/mxstzdev/home-assistant-blueprints/compare/area-heating-control/2.3.0...area-heating-control/2.4.0) (2026-11-20)
+
+
+### Added
+
+* add PTO schedules for holidays and days off ([5d55cc0](https://github.com/mxstzdev/home-assistant-blueprints/commit/5d55cc0bc62d6b6f9b6620326169c1d22dd6ff7a))
+
 ## [2.3.0](https://github.com/mxstzdev/home-assistant-blueprints/compare/area-heating-control/2.2.0...area-heating-control/2.3.0) (2026-11-19)
 
 
