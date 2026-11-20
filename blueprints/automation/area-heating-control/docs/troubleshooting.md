@@ -41,6 +41,38 @@ The event `area_heating_control_event` carries the same information, and can be 
 | `valves` / `controllers` | The radiator thermostats and wall controllers in use |
 | `tasks` | The commands sent in this run |
 
+### Templates
+
+These templates show what the automation sees right now. Paste one into **Developer tools →
+Template** and replace the entity ids in the first lines with the ones from your automation.
+
+#### Schedules and PTO days
+
+Shows whether today is a PTO day and why, which schedules are used, their state and next change,
+and the level they give before persons, presence and vacation mode are applied:
+
+```jinja
+{% set schedules = ['schedule.living_room_heating'] %}
+{% set pto_schedules = ['schedule.living_room_heating_pto'] %}
+{% set workday_entity = 'binary_sensor.workday_sensor' %}
+{% set pto_calendars = ['calendar.days_off', 'calendar.holidays'] %}
+{% set workday_off = workday_entity != '' and is_state(workday_entity, 'off') %}
+{% set calendars_on = pto_calendars | select('is_state', 'on') | list %}
+{% set pto_day = workday_off or calendars_on | count > 0 %}
+{% set use_pto = pto_day and pto_schedules | count > 0 %}
+{% set used = pto_schedules if use_pto else schedules %}
+Workday entity: {{ workday_entity ~ ' is ' ~ states(workday_entity)
+                    if workday_entity else 'not set' }}
+PTO calendars with an active event:
+{%- for id in calendars_on %} {{ id }} ({{ state_attr(id, 'message') }}){% else %} none{% endfor %}
+PTO day: {{ 'yes' if pto_day else 'no' }}
+Used: {{ 'PTO schedules' if use_pto else 'schedules' }}
+{% for id in used %}
+- {{ id }}: {{ states(id) }}, next change {{ state_attr(id, 'next_event') or 'none' }}
+{% endfor %}
+Schedule level: {{ 'comfort' if used | select('is_state', 'on') | list else 'eco' }}
+```
+
 ## Common problems
 
 ### A thermostat is not controlled
@@ -84,6 +116,10 @@ to the whole area until then. While heating is off, changes on wall controllers 
   Use guest mode for guests without a `person`.
 - **A temporary change is active.** A change on a wall controller with *Temporary* lasts until the
   next change in the area, which can be the next schedule switch.
+- **A PTO schedule is used.** With PTO schedules set, they replace the schedules while the workday
+  entity is off or a PTO calendar has an active event. Workday is off on weekends by default. The
+  log shows `pto_day=True` on such days, and the [schedules template](#schedules-and-pto-days)
+  shows why. Check Workday's *Offset* option: with an offset, it describes another day than today.
 
 ### Calibration does not write anything
 

@@ -22,7 +22,8 @@ preset differs from the wanted state. In order of priority:
    - comfort while the presence sensor detects someone;
    - away once nobody has been home for the away delay;
    - with schedules: comfort while any schedule is on and, if persons are configured, somebody is
-     home, otherwise eco;
+     home, otherwise eco. On PTO days (workday entity off, or a PTO calendar with an active event),
+     the PTO schedules are used instead, if any are set;
    - with persons or guest mode: comfort while somebody is home, otherwise eco;
    - otherwise: eco.
 

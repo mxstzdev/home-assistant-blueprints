@@ -52,6 +52,24 @@ selected schedules is on, the area uses the comfort temperature, otherwise eco.
 Several schedules can be combined, for example one per household member, and one schedule can be
 used by several areas.
 
+### PTO schedules
+
+For days at home, such as public holidays or vacation days, create a second schedule, for example
+`schedule.living_room_heating_pto`, and select it as *PTO schedule*. It is used instead of the
+regular schedules on PTO (paid time off) days. Tell the blueprint which days these are:
+
+- **Workday entity:** the `binary_sensor` or `calendar` of the
+  [Workday](https://www.home-assistant.io/integrations/workday/) integration. While it is off, the
+  day is a PTO day. With its default settings, this covers weekends and public holidays.
+- **PTO calendars:** the calendar of the
+  [Holiday](https://www.home-assistant.io/integrations/holiday/) integration for public holidays,
+  and a calendar you maintain yourself, such as a
+  [Local Calendar](https://www.home-assistant.io/integrations/local_calendar/), with an all-day
+  event for each day off at home. While any of them has an active event, the day is a PTO day.
+
+Workday alone cannot know that you take a week off, so add your own calendar for that. For time away
+from home, use vacation mode instead.
+
 ### Toggles and buttons
 
 | Helper | Type | Input | Use |
@@ -119,6 +137,11 @@ use_blueprint:
     comfort_temperature_entity: input_number.living_room_comfort
     schedules:
       - schedule.living_room_heating
+    pto_schedules:
+      - schedule.living_room_heating_pto
+    workday_entity: binary_sensor.workday_sensor
+    pto_calendars:
+      - calendar.days_off
     persons:
       - person.alex
       - person.sam

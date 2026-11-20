@@ -8,7 +8,7 @@ blueprint:
 
     - 🌱 Auto-calculated temperatures: set your comfort temperature, and eco, away and boost follow it (overridable with custom entities)
     - 🕵️ Entity auto-discovery for thermostats, window sensors and temperature sensors
-    - 🗓️ Multiple heating schedules, e.g. one per household member
+    - 🗓️ Multiple heating schedules, e.g. for PTO days or one per household member
     - 👥 Persons and presence detection, including guest and vacation mode
     - 🪟 Open window detection with heating off or frost protection
     - ⚙️ Thermostat calibration against external temperature sensors
@@ -138,15 +138,45 @@ blueprint:
       input:
         schedules:
           name: Schedules
-          description: >
-            Comfort temperature while any of these schedules is on, eco temperature otherwise. If
-            persons are configured, somebody must also be home.
+          description: |
+            Comfort temperature while any of these schedules is on, eco temperature otherwise. If persons are configured, somebody must also be home. On PTO days, the PTO schedules are used instead, if any are set.
           default: []
           selector:
             entity:
               multiple: true
               filter:
                 - domain: schedule
+        pto_schedules:
+          name: PTO schedules
+          description: |
+            Optional. Used instead of the schedules on PTO (paid time off) days: public holidays, vacation days at home and, with a workday entity, weekends. **Empty:** the schedules are used every day.
+          default: []
+          selector:
+            entity:
+              multiple: true
+              filter:
+                - domain: schedule
+        workday_entity:
+          name: Workday entity
+          description: |
+            Optional. The binary sensor or calendar of the [Workday](https://www.home-assistant.io/integrations/workday/) integration. While it is off, the day counts as a PTO day. By default, Workday is off on weekends and public holidays.
+          default: []
+          selector:
+            entity:
+              filter:
+                - domain:
+                    - binary_sensor
+                    - calendar
+        pto_calendars:
+          name: PTO calendars
+          description: |
+            Optional. While any of these calendars has an active event, the day counts as a PTO day. Add the calendar of the [Holiday](https://www.home-assistant.io/integrations/holiday/) integration for public holidays, and a calendar you maintain yourself (for example a [Local Calendar](https://www.home-assistant.io/integrations/local_calendar/)) with all-day events for your days off at home. For time away from home, use vacation mode instead.
+          default: []
+          selector:
+            entity:
+              multiple: true
+              filter:
+                - domain: calendar
 
     person_section:
       name: Persons and presence
@@ -642,6 +672,9 @@ trigger_variables:
   window_open_delay: !input window_open_delay
   window_close_delay: !input window_close_delay
   schedules: !input schedules
+  pto_schedules: !input pto_schedules
+  workday_entity: !input workday_entity
+  pto_calendars: !input pto_calendars
   presence_sensor: !input presence_sensor
   presence_on_delay: !input presence_on_delay
   presence_off_delay: !input presence_off_delay
@@ -755,6 +788,18 @@ triggers:
     entity_id: !input schedules
     to: ~
     id: reconcile_schedule
+  - trigger: state
+    entity_id: !input pto_schedules
+    to: ~
+    id: reconcile_pto_schedule
+  - trigger: state
+    entity_id: !input workday_entity
+    to: ~
+    id: reconcile_workday
+  - trigger: state
+    entity_id: !input pto_calendars
+    to: ~
+    id: reconcile_pto_calendar
 
   - trigger: template
     value_template: "{{ presence_sensor is string and is_state(presence_sensor, 'on') }}"
@@ -952,6 +997,8 @@ actions:
       guest_mode_id: "{{ guest_mode if guest_mode is string and guest_mode != '' else none }}"
       vacation_mode_id: >
         {{ vacation_mode if vacation_mode is string and vacation_mode != '' else none }}
+      workday_entity_id: >
+        {{ workday_entity if workday_entity is string and workday_entity != '' else none }}
       boost_entity_id: >
         {{ boost_entity if boost_entity is string and boost_entity != '' else none }}
       outdoor_entity_ids: >
@@ -1245,7 +1292,14 @@ actions:
         {{ trigger_id not in resume_triggers
            and controller_ids | select('is_state', 'off') | list | count > 0 }}
 
-      schedule_on: "{{ schedules | select('is_state', 'on') | list | count > 0 }}"
+      # PTO day: the workday entity is off, or a PTO calendar has an active event. An unavailable
+      # workday entity counts as a workday. Without PTO schedules, the schedules apply every day.
+      pto_day: >
+        {{ (workday_entity_id is not none and is_state(workday_entity_id, 'off'))
+           or pto_calendars | select('is_state', 'on') | list | count > 0 }}
+      active_schedules: >
+        {{ pto_schedules if pto_day and pto_schedules | count > 0 else schedules }}
+      schedule_on: "{{ active_schedules | select('is_state', 'on') | list | count > 0 }}"
 
       limescale_active: >
         {{ limescale_protection
@@ -1278,7 +1332,7 @@ actions:
           comfort
         {% elif away_delay_reached %}
           away
-        {% elif schedules | count > 0 %}
+        {% elif active_schedules | count > 0 %}
           {{ 'comfort' if schedule_on and (not persons_defined or anybody_home) else 'eco' }}
         {% elif persons_defined and anybody_home %}
           comfort
@@ -1577,7 +1631,7 @@ actions:
       logger: blueprints.mxstzdev.area_heating_control
       level: "{{ log_level }}"
       message: >
-        [{{ this.entity_id }}] trigger={{ trigger_id }} level={{ level }}
+        [{{ this.entity_id }}] trigger={{ trigger_id }} level={{ level }} pto_day={{ pto_day }}
         target={{ target_temperature }} off={{ area_off_reason }} boost={{ boost_active }}
         area_temperature={{ area_temperature }} tasks={{ tasks }}
 
