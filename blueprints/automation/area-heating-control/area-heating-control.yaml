@@ -316,7 +316,7 @@ blueprint:
                   device_class:
                     - door
                     - window
-        window_behaviour:
+        window_open_behaviour:
           name: Window open behaviour
           description: |
             What happens while a window is open:
@@ -713,7 +713,7 @@ trigger_variables:
   windows: !input windows
   doors: !input doors
   excluded_door_window_sensors: !input excluded_door_window_sensors
-  window_behaviour: !input window_behaviour
+  window_open_behaviour: !input window_open_behaviour
   frost_protection_temperature: !input frost_protection_temperature
   window_open_delay: !input window_open_delay
   window_close_delay: !input window_close_delay
@@ -1527,7 +1527,7 @@ actions:
             {% set clamp = [[target_temperature, min_temp] | max, max_temp] | min %}
             {% set preset = none %}
             {% set off_reason = controller_off_reason if is_range else area_off_reason %}
-            {% set native = off_reason == 'windows' and window_behaviour == 'native'
+            {% set native = off_reason == 'windows' and window_open_behaviour == 'native'
                  and id in window_inputs %}
             {% if limescale_active and not is_range %}
               {% set mode, temp = heat, max_temp %}
@@ -1535,7 +1535,7 @@ actions:
               {# The thermostat handles the open window itself. #}
               {% set mode, temp = heat, clamp %}
             {% elif off_reason is not none
-                    and (off_reason != 'windows' or window_behaviour != 'frost_protection') %}
+                    and (off_reason != 'windows' or window_open_behaviour != 'frost_protection') %}
               {% set mode, temp = ('off', none) if 'off' in modes else (heat, min_temp) %}
             {% elif off_reason == 'windows' %}
               {% set window_temp = frost_protection_temperature
@@ -1599,7 +1599,7 @@ actions:
              stop them heating. #}
           {% for id, entity in window_inputs.items() %}
             {% set is_controller = id in controller_ids %}
-            {% if is_controller or window_behaviour == 'native' %}
+            {% if is_controller or window_open_behaviour == 'native' %}
               {% set open = windows_open
                    and (not is_controller or controller_window_behaviour == 'follow') %}
               {% if entity.startswith('switch.') %}

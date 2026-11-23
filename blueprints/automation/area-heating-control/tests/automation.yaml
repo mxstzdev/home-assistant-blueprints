@@ -35,7 +35,7 @@
       limescale_protection_time: "11:30:00"
       windows:
         - binary_sensor.living_room_window
-      window_behaviour: native
+      window_open_behaviour: native
       window_open_delay:
         seconds: 30
       window_close_delay:
