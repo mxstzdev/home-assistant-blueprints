@@ -20,7 +20,9 @@ the entity itself or its device is assigned to it.
 
 If auto-discovery picks up something you do not want, select the wanted entities explicitly in the
 automation. A selection replaces the auto-discovery for that input only. To drop a single sensor,
-for example a wardrobe door, add it to *Excluded door and window sensors* instead.
+for example a wardrobe door, add it to *Excluded door and window sensors* instead. Door and window
+sensors of adjacent areas, for example the front door in the hallway, go into *Additional door and
+window sensors*; they count without replacing the auto-discovery.
 
 ## 2. Create helpers
 

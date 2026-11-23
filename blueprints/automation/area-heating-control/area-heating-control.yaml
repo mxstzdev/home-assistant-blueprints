@@ -301,6 +301,21 @@ blueprint:
                     - binary_sensor
                     - sensor
                   device_class: door
+        additional_door_window_sensors:
+          name: Additional door and window sensors
+          description: |
+            Door and window sensors of adjacent areas that count too, for example the front door in the hallway.
+          default: []
+          selector:
+            entity:
+              multiple: true
+              filter:
+                - domain:
+                    - binary_sensor
+                    - sensor
+                  device_class:
+                    - door
+                    - window
         excluded_door_window_sensors:
           name: Excluded door and window sensors
           description: |
@@ -712,6 +727,7 @@ trigger_variables:
   limescale_protection_time: !input limescale_protection_time
   windows: !input windows
   doors: !input doors
+  additional_door_window_sensors: !input additional_door_window_sensors
   excluded_door_window_sensors: !input excluded_door_window_sensors
   window_open_behaviour: !input window_open_behaviour
   frost_protection_temperature: !input frost_protection_temperature
@@ -861,7 +877,8 @@ triggers:
       {% set found = area_entities(area) | select('match', '(binary_)?sensor[.]') | list %}
       {% set ids = (windows if windows | count > 0
            else found | select('is_state_attr', 'device_class', 'window') | list)
-           + (doors if doors | count > 0 else found | select('is_state_attr', 'device_class', 'door') | list) %}
+           + (doors if doors | count > 0 else found | select('is_state_attr', 'device_class', 'door') | list)
+           + additional_door_window_sensors %}
       {{ ids | reject('in', excluded_door_window_sensors)
            | select('is_state', ['on', 'open', 'tilted']) | list | count > 0 }}
     for: !input window_open_delay
@@ -871,7 +888,8 @@ triggers:
       {% set found = area_entities(area) | select('match', '(binary_)?sensor[.]') | list %}
       {% set ids = (windows if windows | count > 0
            else found | select('is_state_attr', 'device_class', 'window') | list)
-           + (doors if doors | count > 0 else found | select('is_state_attr', 'device_class', 'door') | list) %}
+           + (doors if doors | count > 0 else found | select('is_state_attr', 'device_class', 'door') | list)
+           + additional_door_window_sensors %}
       {{ ids | reject('in', excluded_door_window_sensors)
            | select('is_state', ['on', 'open', 'tilted']) | list | count == 0 }}
     for: !input window_close_delay
@@ -1108,12 +1126,13 @@ actions:
         {% endfor %}
         {{ ns.ids }}
       # Window and door sensors. An empty input uses the area's sensors of that device class.
-      # Excluded sensors never count.
+      # Additional sensors always count, excluded sensors never count.
       window_ids: >
         {% set found = area_entities(area) | select('match', '(binary_)?sensor[.]') | list %}
         {% set ids = (windows if windows | count > 0
              else found | select('is_state_attr', 'device_class', 'window') | list)
-             + (doors if doors | count > 0 else found | select('is_state_attr', 'device_class', 'door') | list) %}
+             + (doors if doors | count > 0 else found | select('is_state_attr', 'device_class', 'door') | list)
+             + additional_door_window_sensors %}
         {{ ids | reject('in', excluded_door_window_sensors) | unique | list }}
       # Boost switches on radiator thermostat devices without a boost preset.
       boost_switches: >
