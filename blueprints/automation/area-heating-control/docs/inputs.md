@@ -47,7 +47,7 @@ active event. An unavailable workday entity counts as a workday.
 | ----- | --- | ------- | ----------- |
 | Persons | `persons` | | `person` entities |
 | Arrive delay | `person_arrive_delay` | 1 min | |
-| Leave delay | `person_leave_delay` | 1 min | |
+| Leave delay | `person_leave_delay` | 5 min | |
 | Guest mode | `guest_mode` | | Counts as somebody at home while on |
 | Presence sensor | `presence_sensor` | | Occupancy, presence or motion sensor, or `input_boolean` |
 | Presence detected delay | `presence_on_delay` | 5 min | |

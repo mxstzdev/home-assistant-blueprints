@@ -205,7 +205,7 @@ blueprint:
           name: Leave delay
           description: How long everybody must be away before the area counts as empty.
           default:
-            minutes: 1
+            minutes: 5
           selector:
             duration:
         guest_mode:
