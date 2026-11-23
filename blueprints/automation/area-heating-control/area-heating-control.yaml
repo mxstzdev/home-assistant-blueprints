@@ -376,7 +376,7 @@ blueprint:
           name: Boost duration
           description: How long a boost lasts. A boost trigger that is still on is turned off then.
           default:
-            minutes: 30
+            minutes: 15
           selector:
             duration:
 

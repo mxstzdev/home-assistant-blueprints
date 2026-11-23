@@ -71,7 +71,7 @@ active event. An unavailable workday entity counts as a workday.
 | Input | Key | Default | Description |
 | ----- | --- | ------- | ----------- |
 | Boost trigger | `boost_entity` | | `input_boolean`, `input_button` or `binary_sensor`, see [Boost](how-it-works.md#boost) |
-| Boost duration | `boost_duration` | 30 min | |
+| Boost duration | `boost_duration` | 15 min | |
 
 ## Room thermostats
 
