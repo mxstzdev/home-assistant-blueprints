@@ -59,7 +59,9 @@ active event. An unavailable workday entity counts as a workday.
 
 | Input | Key | Default | Description |
 | ----- | --- | ------- | ----------- |
-| Window sensors | `windows` | area: window and door sensors | |
+| Window sensors | `windows` | area: window sensors | |
+| Door sensors | `doors` | area: door sensors | Doors that count as windows, for example balcony doors |
+| Excluded door and window sensors | `excluded_door_window_sensors` | | Never count, for example a wardrobe door |
 | Window open behaviour | `window_behaviour` | `"off"` | `"off"`, `frost_protection` or `native`, see [Windows](how-it-works.md#windows) |
 | Window open delay | `window_open_delay` | 1 min | |
 | Window close delay | `window_close_delay` | 1 min | |

@@ -127,8 +127,8 @@ Check `area_off_reason`:
 
 ### An open door turns the heating off
 
-Auto-discovery uses window **and** door sensors of the area. If a door should not count, select the
-window sensors explicitly in the automation.
+Auto-discovery uses window **and** door sensors of the area. If a door should not count, add it to
+*Excluded door and window sensors*, or select the wanted doors in *Door sensors*.
 
 ### A change on a thermostat is reverted or ignored
 
