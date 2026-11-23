@@ -77,6 +77,7 @@ active event. An unavailable workday entity counts as a workday.
 | ----- | --- | ------- | ----------- |
 | Wall controllers | `controllers` | area: target temperature range | |
 | Wall controller input mode | `controller_behaviour` | `persistent` | `readonly`, `temporary` or `persistent`, see [Changes on thermostats](how-it-works.md#changes-on-thermostats) |
+| Wall controller window behaviour | `controller_window_behaviour` | `ignore` | `ignore` (keep heating at the area target) or `follow` (react like the radiator thermostats), see [Windows](how-it-works.md#windows) |
 
 ## Radiator thermostats
 

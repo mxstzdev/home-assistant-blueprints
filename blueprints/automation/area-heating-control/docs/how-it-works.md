@@ -11,7 +11,8 @@ preset differs from the wanted state. In order of priority:
      drops below the cutoff minus the hysteresis; in between, the current state is kept. The outdoor
      temperature sensor is used first, the weather entity while the sensor has no valid value;
    - a wall controller was turned off: the whole area stays off until it is turned on again;
-   - a window is open, handled as set in *Window open behaviour* (see below).
+   - a window is open, handled as set in *Window open behaviour* (see below). Wall controllers keep
+     heating at the area target unless *Wall controller window behaviour* is *Follow*.
 
    Thermostats are turned off, or set to their minimum temperature if they have no off mode.
 3. **Boost**, while active: radiator thermostats use their `boost` preset, a boost switch on the
@@ -54,10 +55,22 @@ not start again.
 | Frost protection | Thermostats keep heating at the frost protection temperature (0: their minimum) |
 | Native | The window state is sent to each thermostat's window input, and the thermostat reacts itself. Thermostats without one are turned off |
 
-Wall controllers always get the window state on their window input, if they have one, so they can
-show it. A window input is a `switch` or `select` on the thermostat's device whose id contains
+The window open behaviour applies to radiator thermostats. Wall controllers follow *Wall controller
+window behaviour*:
+
+| Wall controller window behaviour | Effect while a window is open |
+| -------------------------------- | ----------------------------- |
+| Ignore (default) | The wall controller keeps heating at the area target, and changes on it are applied as usual. Its window input is kept closed |
+| Follow | The wall controller reacts like the radiator thermostats, and always gets the window state on its window input, so it can show it |
+
+With *Ignore*, opening or closing a window does not end a temporary change on a wall controller.
+Radiator thermostats resume at that temperature once all windows are closed.
+
+A window input is a `switch` or `select` on the thermostat's device whose id contains
 `window_open`, `open_window` or `window_state`. Entities that only enable the device's own
-detection (`detection`, `feature`, `function`, `enable`) are not used.
+detection (`detection`, `feature`, `function`, `enable`) are not used, except on models whose
+`window_detection` entity puts the thermostat into window open mode: Bosch room thermostat II
+(`BTH-RM`, `BTH-RM230Z`).
 
 ## Changes on thermostats
 
@@ -78,7 +91,8 @@ child lock of the thermostat's device is turned on, if it has one: a `lock` or `
 contains `child_lock`, `childlock` or `child_protection`. In the other modes, the child lock is
 turned off when the automation is reloaded, for example after saving it, and left alone
 otherwise. While heating is off,
-changes on wall controllers are reverted. A change in the area is any event the blueprint reacts
+changes on wall controllers are reverted, except while only a window is open and *Wall controller
+window behaviour* is *Ignore*. A change in the area is any event the blueprint reacts
 to, such as a schedule, a person, a window or the heating system. Selecting the `boost` preset on a
 wall controller, or turning on a boost switch on its device, boosts the whole area until the
 controller leaves the preset or the switch turns off.

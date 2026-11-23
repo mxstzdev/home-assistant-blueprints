@@ -387,6 +387,21 @@ blueprint:
                   value: temporary
                 - label: Persistent
                   value: persistent
+        controller_window_behaviour:
+          name: Wall controller window behaviour
+          description: |
+            What happens to wall controllers while a window is open:
+
+            - **Ignore** (default): they keep heating at the area target, and changes on them are applied as usual. Only radiator thermostats react to the window.
+            - **Follow:** they react like the radiator thermostats, as set in **Window open behaviour**, and get the window state on their window input.
+          default: ignore
+          selector:
+            select:
+              options:
+                - label: Ignore
+                  value: ignore
+                - label: Follow
+                  value: follow
 
     thermostat_section:
       name: Radiator thermostats
@@ -657,6 +672,7 @@ trigger_variables:
   valve_behaviour: !input valve_behaviour
   controllers: !input controllers
   controller_behaviour: !input controller_behaviour
+  controller_window_behaviour: !input controller_window_behaviour
   calibration: !input calibration
   temperature_sensors: !input temperature_sensors
   excluded_temperature_sensors: !input excluded_temperature_sensors
@@ -1099,15 +1115,22 @@ actions:
         {{ ns.map }}
 
       # Window inputs on thermostat devices (switch or select), for visual feedback and native
-      # window handling. Entities that only enable the device's own detection are skipped.
+      # window handling. Entities that only enable the device's own detection are skipped,
+      # except on models whose window detection entity is the window open input.
+      window_detection_models: "{{ ['BTH-RM'] }}"
       window_inputs: >
         {% set ns = namespace(map={}) %}
         {% for id in valve_ids + controller_ids %}
           {% set device = device_id(id) %}
           {% if device %}
-            {% set entity = device_entities(device) | select('match', '(switch|select)[.]')
-                 | select('search', 'window_open|open_window|window_state')
+            {% set entities = device_entities(device) | select('match', '(switch|select)[.]') | list %}
+            {% set entity = entities | select('search', 'window_open|open_window|window_state')
                  | reject('search', 'detection|feature|function|enable') | first | default(none) %}
+            {% set model = device_attr(device, 'model_id') ~ ' ' ~ device_attr(device, 'model') %}
+            {% if entity is none and window_detection_models | select('in', model) | list | count > 0 %}
+              {% set entity = entities | select('search', 'window_detection') | first
+                   | default(none) %}
+            {% endif %}
             {% if entity %}
               {% set ns.map = dict(ns.map, **{id: entity}) %}
             {% endif %}
@@ -1287,7 +1310,8 @@ actions:
       # A wall controller someone turned off turns the whole area off. When the area was off for
       # another reason that has just ended, an off controller is assumed to be ours and resumes.
       resume_triggers: >
-        {{ ['reconcile_window_closed', 'reconcile_heating_system_on', 'reconcile_outdoor_cold'] }}
+        {{ (['reconcile_window_closed'] if controller_window_behaviour == 'follow' else [])
+           + ['reconcile_heating_system_on', 'reconcile_outdoor_cold'] }}
       controller_off: >
         {{ trigger_id not in resume_triggers
            and controller_ids | select('is_state', 'off') | list | count > 0 }}
@@ -1385,6 +1409,32 @@ actions:
         {% else %}
           {{ none }}
         {% endif %}
+      # Wall controllers that ignore windows keep heating while a window is open.
+      controller_off_reason: >
+        {{ none if area_off_reason == 'windows' and controller_window_behaviour == 'ignore'
+           else area_off_reason }}
+      # A window opening or closing keeps a temporary change on a wall controller that ignores
+      # windows: its current setpoint stays the area target.
+      held_temperature: >
+        {% set ns = namespace(t=none) %}
+        {% set behaviour = 'temporary' if controller_behaviour == 'persistent'
+             and level_entity_id is none else controller_behaviour %}
+        {% if trigger_id in ['reconcile_window_open', 'reconcile_window_closed']
+              and controller_window_behaviour == 'ignore' and behaviour == 'temporary'
+              and controller_off_reason is none %}
+          {% for id in controller_ids if ns.t is none and is_state(id, 'heat')
+                and state_attr(id, 'preset_mode') != 'boost'
+                and not is_state(controller_boost_switches.get(id, ''), 'on') %}
+            {% set value = state_attr(id, 'target_temp_low') %}
+            {% set low = state_attr(id, 'min_temp') | float(5) %}
+            {% set high = state_attr(id, 'max_temp') | float(30) %}
+            {% set expected = [[level_temperature, low] | max, high] | min %}
+            {% if value is number and (value - expected) | abs >= 0.05 %}
+              {% set ns.t = value | float %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        {{ ns.t }}
 
       # --- Changes on a thermostat ------------------------------------------
       change_value: >
@@ -1405,7 +1455,8 @@ actions:
       # Value to write to the active temperature entity (persistent changes).
       level_write: >
         {% if change_value is not none and change_behaviour == 'persistent'
-              and area_off_reason is none %}
+              and (controller_off_reason if trigger_id == 'controller_setpoint'
+                   else area_off_reason) is none %}
           {% set low = state_attr(level_entity_id, 'min') | float(5) %}
           {% set high = state_attr(level_entity_id, 'max') | float(30) %}
           {{ [[change_value + level_offset, low] | max, high] | min }}
@@ -1419,9 +1470,15 @@ actions:
                and (change_behaviour == 'readonly' or trigger_id == 'controller_setpoint')) }}
       # A temporary change on a wall controller becomes the target of the whole area.
       target_temperature: >
-        {{ change_value if trigger_id == 'controller_setpoint' and change_value is not none
-           and level_write is none and change_behaviour == 'temporary'
-           and area_off_reason is none else level_temperature }}
+        {% if trigger_id == 'controller_setpoint' and change_value is not none
+              and level_write is none and change_behaviour == 'temporary'
+              and controller_off_reason is none %}
+          {{ change_value }}
+        {% elif held_temperature is not none %}
+          {{ held_temperature }}
+        {% else %}
+          {{ level_temperature }}
+        {% endif %}
 
       # --- Tasks ------------------------------------------------------------
       thermostat_tasks: >
@@ -1438,17 +1495,18 @@ actions:
             {% set max_temp = state_attr(id, 'max_temp') | float(30) %}
             {% set clamp = [[target_temperature, min_temp] | max, max_temp] | min %}
             {% set preset = none %}
-            {% set native = area_off_reason == 'windows' and window_behaviour == 'native'
+            {% set off_reason = controller_off_reason if is_range else area_off_reason %}
+            {% set native = off_reason == 'windows' and window_behaviour == 'native'
                  and id in window_inputs %}
             {% if limescale_active and not is_range %}
               {% set mode, temp = heat, max_temp %}
             {% elif native %}
               {# The thermostat handles the open window itself. #}
               {% set mode, temp = heat, clamp %}
-            {% elif area_off_reason is not none
-                    and (area_off_reason != 'windows' or window_behaviour != 'frost_protection') %}
+            {% elif off_reason is not none
+                    and (off_reason != 'windows' or window_behaviour != 'frost_protection') %}
               {% set mode, temp = ('off', none) if 'off' in modes else (heat, min_temp) %}
-            {% elif area_off_reason == 'windows' %}
+            {% elif off_reason == 'windows' %}
               {% set window_temp = frost_protection_temperature
                    if frost_protection_temperature > 0 else min_temp %}
               {% set mode, temp = heat, [[window_temp, min_temp] | max, max_temp] | min %}
@@ -1505,19 +1563,24 @@ actions:
               {% set ns.tasks = ns.tasks + [{'action': 'switch.turn_off', 'data': {'entity_id': switch}}] %}
             {% endif %}
           {% endfor %}
-          {# Controllers always show the window state; valves only in native mode. #}
+          {# Controllers that follow windows always show the window state; valves only in native
+             mode. Controllers that ignore windows are kept closed, as their window input may
+             stop them heating. #}
           {% for id, entity in window_inputs.items() %}
-            {% if id in controller_ids or window_behaviour == 'native' %}
+            {% set is_controller = id in controller_ids %}
+            {% if is_controller or window_behaviour == 'native' %}
+              {% set open = windows_open
+                   and (not is_controller or controller_window_behaviour == 'follow') %}
               {% if entity.startswith('switch.') %}
-                {% if windows_open and not is_state(entity, 'on') %}
+                {% if open and not is_state(entity, 'on') %}
                   {% set ns.tasks = ns.tasks + [{'action': 'switch.turn_on', 'data': {'entity_id': entity}}] %}
-                {% elif not windows_open and is_state(entity, 'on') %}
+                {% elif not open and is_state(entity, 'on') %}
                   {% set ns.tasks = ns.tasks + [{'action': 'switch.turn_off', 'data': {'entity_id': entity}}] %}
                 {% endif %}
               {% else %}
                 {% set options = state_attr(entity, 'options') or [] %}
                 {% set wanted = (options | select('search', '(?i)^open') | first | default(none))
-                     if windows_open
+                     if open
                      else (options | select('search', '(?i)^clos') | first | default(none)) %}
                 {% if wanted and not is_state(entity, wanted) %}
                   {% set ns.tasks = ns.tasks + [{'action': 'select.select_option',

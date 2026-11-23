@@ -196,8 +196,8 @@ are resolved by assumption:
 
 - A window that was open for less than the open delay can still turn heating off for up to the close
   delay, if another event happens in that time.
-- An open window, the heating system or the outdoor temperature end a temporary change on a wall
-  controller.
+- The heating system or the outdoor temperature end a temporary change on a wall controller. An
+  open window ends it only if *Wall controller window behaviour* is *Follow*.
 - If someone turns a wall controller off while heating is already off for another reason, it is
   turned on again when that reason ends.
 - Inside the outdoor hysteresis band, the area counts as warm outside while all its thermostats are
