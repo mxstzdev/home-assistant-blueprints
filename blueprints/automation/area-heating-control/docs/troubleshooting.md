@@ -37,8 +37,8 @@ The event `area_heating_control_event` carries the same information, and can be 
 | `target_temperature` | The temperature the area should have |
 | `area_off_reason` | Why heating is off: `heating_system`, `outdoor`, `controller`, `windows`, or empty |
 | `boost` | Whether a boost is active |
-| `area_temperature` | Median of the temperature sensors, or of the wall controllers without sensors |
-| `valves` / `controllers` | The radiator thermostats and wall controllers in use |
+| `area_temperature` | Median of the temperature sensors, or of the room thermostats without sensors |
+| `valves` / `controllers` | The radiator thermostats and room thermostats in use |
 | `tasks` | The commands sent in this run |
 
 ### Templates
@@ -111,7 +111,7 @@ Median: {{ median }}
 - **It was unavailable.** Thermostats that are `unavailable` or `unknown` are skipped until they
   come back.
 - **It was detected as the wrong type.** Thermostats with a target temperature range are treated as
-  wall controllers, all others as radiator thermostats. Check the `valves` and `controllers` fields
+  room thermostats, all others as radiator thermostats. Check the `valves` and `controllers` fields
   of the event. If one is wrong, select the thermostats explicitly in the automation.
 
 ### Heating stays off
@@ -122,7 +122,7 @@ Check `area_off_reason`:
 | ------ | ----- | --- |
 | `heating_system` | The heating system entity is off | Check the entity and the heating system delay |
 | `outdoor` | The outdoor temperature is at or above the cutoff | Heating resumes below the cutoff minus the hysteresis |
-| `controller` | A wall controller is turned off | Turn the controller on again |
+| `controller` | A room thermostat is turned off | Turn the thermostat on again |
 | `windows` | A window or door sensor is open | See below |
 
 ### An open door turns the heating off
@@ -132,10 +132,10 @@ window sensors explicitly in the automation.
 
 ### A change on a thermostat is reverted or ignored
 
-This is set by *Radiator thermostat input mode* and *Wall controller input mode*, see
+This is set by *Radiator thermostat input mode* and *Room thermostat input mode*, see
 [Changes on thermostats](how-it-works.md#changes-on-thermostats). By default, changes on radiator
-thermostats are kept only until the next change in the area, and changes on wall controllers apply
-to the whole area until then. While heating is off, changes on wall controllers are reverted.
+thermostats are kept only until the next change in the area, and changes on room thermostats apply
+to the whole area until then. While heating is off, changes on room thermostats are reverted.
 
 ### The temperature does not follow the schedule
 
@@ -143,7 +143,7 @@ to the whole area until then. While heating is off, changes on wall controllers 
   keeps it at away, regardless of schedules.
 - **Nobody is home.** With persons configured, a schedule only gives comfort while somebody is home.
   Use guest mode for guests without a `person`.
-- **A temporary change is active.** A change on a wall controller with *Temporary* lasts until the
+- **A temporary change is active.** A change on a room thermostat with *Temporary* lasts until the
   next change in the area, which can be the next schedule switch.
 - **A PTO schedule is used.** With PTO schedules set, they replace the schedules while the workday
   entity is off or a PTO calendar has an active event. Workday is off on weekends by default. The
@@ -159,7 +159,7 @@ to the whole area until then. While heating is off, changes on wall controllers 
   contains one of the listed words, for example `number.living_room_trv_external_temperature`.
 - **The difference is too small or too recent.** Offsets are only written if they change by at least
   the calibration delta and the last change is older than the calibration timeout.
-- **There is no area temperature.** Without temperature sensors and wall controllers, there is
+- **There is no area temperature.** Without temperature sensors and room thermostats, there is
   nothing to calibrate against.
 
 ### The area temperature is wrong
@@ -196,9 +196,9 @@ are resolved by assumption:
 
 - A window that was open for less than the open delay can still turn heating off for up to the close
   delay, if another event happens in that time.
-- The heating system or the outdoor temperature end a temporary change on a wall controller. An
-  open window ends it only if *Wall controller window behaviour* is *Follow*.
-- If someone turns a wall controller off while heating is already off for another reason, it is
+- The heating system or the outdoor temperature end a temporary change on a room thermostat. An
+  open window ends it only if *Room thermostat window behaviour* is *Follow*.
+- If someone turns a room thermostat off while heating is already off for another reason, it is
   turned on again when that reason ends.
 - Inside the outdoor hysteresis band, the area counts as warm outside while all its thermostats are
   off.

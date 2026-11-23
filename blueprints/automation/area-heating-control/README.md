@@ -15,7 +15,7 @@ a room and keeps them at the right temperature.
 - ⚙️ Thermostat calibration against external temperature sensors
 - ♨️ Heating demand detection based on outdoor temperature and central heating system status
 - 🚀 Temperature boost support for a quick warm-up
-- 🎛️ Wall controller support to control your area from one place
+- 🎛️ Room thermostat support to control your area from one place
 - ⚔️ Weekly limescale protection for radiator valves
 
 ## Requirements

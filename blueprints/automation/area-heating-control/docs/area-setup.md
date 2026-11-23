@@ -13,7 +13,7 @@ the entity itself or its device is assigned to it.
 | Device | Found automatically as |
 | ------ | ---------------------- |
 | Radiator thermostats (TRVs) | `climate` entities with a single target temperature |
-| Wall controllers | `climate` entities with a target temperature range |
+| Room thermostats | `climate` entities with a target temperature range |
 | Room temperature sensors | `sensor` entities with device class `temperature` that are not part of a thermostat |
 | Window and door sensors | `binary_sensor` or `sensor` entities with device class `window` or `door` |
 
@@ -39,8 +39,8 @@ temperature, so you can change it from a dashboard instead of editing the automa
 | `input_number.living_room_away` | 5 to 20 °C, step 0.5 | Away temperature entity (optional override) |
 
 Only create the eco and away helpers to set a fixed value instead of the calculated one. Helpers
-can be shared: one `input_number.home_away` for all areas is a common choice. Changes on the wall
-controllers are written back to these helpers (*Persistent*, the default); for a calculated level,
+can be shared: one `input_number.home_away` for all areas is a common choice. Changes on the room
+thermostats are written back to these helpers (*Persistent*, the default); for a calculated level,
 they go to the comfort helper.
 
 ### Schedules
@@ -161,7 +161,7 @@ thermostats follow. To see why the area chose a temperature, enable the debug lo
 
 ## Next steps
 
-- Check **Calibration**, which is on by default and uses the room sensors or the wall controllers,
+- Check **Calibration**, which is on by default and uses the room sensors or the room thermostats,
   see [Calibration](how-it-works.md#calibration).
 - Check **Limescale protection**, which is on by default, and pick a day and time that suit you.
 - Choose a **Window open behaviour**, see [Windows](how-it-works.md#windows).

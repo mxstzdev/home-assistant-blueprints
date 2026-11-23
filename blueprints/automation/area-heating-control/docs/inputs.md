@@ -71,13 +71,13 @@ active event. An unavailable workday entity counts as a workday.
 | Boost trigger | `boost_entity` | | `input_boolean`, `input_button` or `binary_sensor`, see [Boost](how-it-works.md#boost) |
 | Boost duration | `boost_duration` | 30 min | |
 
-## Wall controllers
+## Room thermostats
 
 | Input | Key | Default | Description |
 | ----- | --- | ------- | ----------- |
-| Wall controllers | `controllers` | area: target temperature range | |
-| Wall controller input mode | `controller_behaviour` | `persistent` | `readonly`, `temporary` or `persistent`, see [Changes on thermostats](how-it-works.md#changes-on-thermostats) |
-| Wall controller window behaviour | `controller_window_behaviour` | `ignore` | `ignore` (keep heating at the area target) or `follow` (react like the radiator thermostats), see [Windows](how-it-works.md#windows) |
+| Room thermostats | `controllers` | area: target temperature range | |
+| Room thermostat input mode | `controller_behaviour` | `persistent` | `readonly`, `temporary` or `persistent`, see [Changes on thermostats](how-it-works.md#changes-on-thermostats) |
+| Room thermostat window behaviour | `controller_window_behaviour` | `ignore` | `ignore` (keep heating at the area target) or `follow` (react like the radiator thermostats), see [Windows](how-it-works.md#windows) |
 
 ## Radiator thermostats
 
@@ -91,7 +91,7 @@ active event. An unavailable workday entity counts as a workday.
 | Input | Key | Default | Description |
 | ----- | --- | ------- | ----------- |
 | Calibration | `calibration` | `true` | See [Calibration](how-it-works.md#calibration) |
-| Temperature sensors | `temperature_sensors` | area: temperature sensors not on a thermostat | Sensors of a wall controller are always ignored |
+| Temperature sensors | `temperature_sensors` | area: temperature sensors not on a thermostat | Sensors of a room thermostat are always ignored |
 | Excluded temperature sensors | `excluded_temperature_sensors` | | Never used for the area temperature, for example a Zigbee coordinator's chip temperature |
 | Calibration delta | `calibration_delta` | 0.5 °C | Minimum offset change |
 | Calibration timeout | `calibration_timeout` | 5 min | Minimum time between two offset changes per thermostat |
