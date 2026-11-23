@@ -14,7 +14,7 @@ blueprint:
     - ⚙️ Thermostat calibration against external temperature sensors
     - ♨️ Heating demand detection based on outdoor temperature and central heating system status
     - 🚀 Temperature boost support for a quick warm-up
-    - 🎛️ Wall controller support to control your area from one place
+    - 🎛️ Room thermostat support to control your area from one place
     - ⚔️ Weekly limescale protection for radiator valves
 
     [Documentation](https://github.com/mxstzdev/home-assistant-blueprints/tree/main/blueprints/automation/area-heating-control) · [Changelog](https://github.com/mxstzdev/home-assistant-blueprints/blob/main/blueprints/automation/area-heating-control/CHANGELOG.md)
@@ -59,7 +59,7 @@ blueprint:
         comfort_temperature_entity:
           name: Comfort temperature entity
           description: |
-            Optional, recommended. An `input_number` that holds the comfort temperature. Overrides the static value above while it has a valid state. It lets you change the temperature from a dashboard, and lets *Persistent* wall controllers save changes for every level.
+            Optional, recommended. An `input_number` that holds the comfort temperature. Overrides the static value above while it has a valid state. It lets you change the temperature from a dashboard, and lets *Persistent* room thermostats save changes for every level.
           default: []
           selector:
             entity:
@@ -335,7 +335,7 @@ blueprint:
             - a boost switch on the same device
             - the comfort temperature plus the boost offset, see **Temperatures**
 
-            Selecting the `boost` preset on a wall controller, or turning on a boost switch on its device, also starts a boost. It lasts while the controller boosts. With a wall controller in the area, a boost started on a single radiator thermostat is not passed on and ends with the next change in the area.
+            Selecting the `boost` preset on a room thermostat, or turning on a boost switch on its device, also starts a boost. It lasts while the room thermostat boosts. With a room thermostat in the area, a boost started on a single radiator thermostat is not passed on and ends with the next change in the area.
           default: []
           selector:
             entity:
@@ -353,14 +353,14 @@ blueprint:
             duration:
 
     controller_section:
-      name: Wall controllers
+      name: Room thermostats
       icon: mdi:thermostat
       collapsed: true
       input:
         controllers:
-          name: Wall controllers
+          name: Room thermostats
           description: |
-            Wall thermostats with a target temperature range. They are set to the area target. Turning one off turns the area off until it is turned on again.
+            Thermostats on the wall with a target temperature range. They are set to the area target. Turning one off turns the area off until it is turned on again.
 
             **Empty:** all climate entities of the area with a target temperature range.
           default: []
@@ -370,11 +370,11 @@ blueprint:
               filter:
                 - domain: climate
         controller_behaviour:
-          name: Wall controller input mode
+          name: Room thermostat input mode
           description: |
-            What happens when someone changes the target temperature on a wall controller:
+            What happens when someone changes the target temperature on a room thermostat:
 
-            - **Read-only:** reverted at once, and the controller's child lock is turned on where available.
+            - **Read-only:** reverted at once, and the room thermostat's child lock is turned on where available.
             - **Temporary:** all thermostats follow it until the next change in the area.
             - **Persistent** (default): saved as the new temperature of the active level. It is written to that level's temperature entity or, for a calculated level, to the comfort temperature entity (so the calculated level matches the change). *Temporary* without a matching entity.
           default: persistent
@@ -388,9 +388,9 @@ blueprint:
                 - label: Persistent
                   value: persistent
         controller_window_behaviour:
-          name: Wall controller window behaviour
+          name: Room thermostat window behaviour
           description: |
-            What happens to wall controllers while a window is open:
+            What happens to room thermostats while a window is open:
 
             - **Ignore** (default): they keep heating at the area target, and changes on them are applied as usual. Only radiator thermostats react to the window.
             - **Follow:** they react like the radiator thermostats, as set in **Window open behaviour**, and get the window state on their window input.
@@ -449,7 +449,7 @@ blueprint:
             - **External temperature input:** the area temperature is written to it.
             - **Otherwise:** the thermostat's calibration or offset number is adjusted.
 
-            Skipped while there are neither temperature sensors nor wall controllers.
+            Skipped while there are neither temperature sensors nor room thermostats.
           default: true
           selector:
             boolean:
@@ -459,8 +459,8 @@ blueprint:
             The area temperature is their median.
 
             - **Empty:** all temperature sensors of the area that do not belong to a thermostat.
-            - Sensors of a wall controller are always ignored.
-            - Without sensors, the wall controllers' temperature is used.
+            - Sensors of a room thermostat are always ignored.
+            - Without sensors, the room thermostats' temperature is used.
           default: []
           selector:
             entity:
@@ -877,7 +877,7 @@ triggers:
            or as_timestamp(now()) - since >= timedelta(**boost_duration).total_seconds() }}
       {% endif %}
     id: reconcile_boost_end
-  # Boost switches on wall controller devices. A template trigger fires on false -> true only,
+  # Boost switches on room thermostat devices. A template trigger fires on false -> true only,
   # so one covers "a switch turned on" and one "all switches are off again".
   - trigger: template
     value_template: >
@@ -1057,7 +1057,7 @@ actions:
         {{ ns.ids | unique | list }}
       controller_device_ids: >
         {{ controller_ids | map('device_id') | select | unique | list }}
-      # Wall controller and excluded sensors are skipped even when selected. A wall controller's
+      # Room thermostat and excluded sensors are skipped even when selected. A room thermostat's
       # own temperature is the fallback below, and counting it twice would skew the area
       # temperature.
       sensor_ids: >
@@ -1099,7 +1099,7 @@ actions:
         {% endfor %}
         {{ ns.map }}
 
-      # Boost switches on wall controller devices. Turning one on starts an area boost.
+      # Boost switches on room thermostat devices. Turning one on starts an area boost.
       controller_boost_switches: >
         {% set ns = namespace(map={}) %}
         {% for id in controller_ids %}
@@ -1307,8 +1307,8 @@ actions:
           {{ ns.total > 0 and ns.off == ns.total }}
         {% endif %}
 
-      # A wall controller someone turned off turns the whole area off. When the area was off for
-      # another reason that has just ended, an off controller is assumed to be ours and resumes.
+      # A room thermostat someone turned off turns the whole area off. When the area was off for
+      # another reason that has just ended, an off room thermostat is assumed to be ours and resumes.
       resume_triggers: >
         {{ (['reconcile_window_closed'] if controller_window_behaviour == 'follow' else [])
            + ['reconcile_heating_system_on', 'reconcile_outdoor_cold'] }}
@@ -1409,11 +1409,11 @@ actions:
         {% else %}
           {{ none }}
         {% endif %}
-      # Wall controllers that ignore windows keep heating while a window is open.
+      # Room thermostats that ignore windows keep heating while a window is open.
       controller_off_reason: >
         {{ none if area_off_reason == 'windows' and controller_window_behaviour == 'ignore'
            else area_off_reason }}
-      # A window opening or closing keeps a temporary change on a wall controller that ignores
+      # A window opening or closing keeps a temporary change on a room thermostat that ignores
       # windows: its current setpoint stays the area target.
       held_temperature: >
         {% set ns = namespace(t=none) %}
@@ -1468,7 +1468,7 @@ actions:
            or trigger_id in ['controller_mode', 'controller_preset']
            or (change_value is not none and level_write is none
                and (change_behaviour == 'readonly' or trigger_id == 'controller_setpoint')) }}
-      # A temporary change on a wall controller becomes the target of the whole area.
+      # A temporary change on a room thermostat becomes the target of the whole area.
       target_temperature: >
         {% if trigger_id == 'controller_setpoint' and change_value is not none
               and level_write is none and change_behaviour == 'temporary'
@@ -1511,7 +1511,7 @@ actions:
                    if frost_protection_temperature > 0 else min_temp %}
               {% set mode, temp = heat, [[window_temp, min_temp] | max, max_temp] | min %}
             {% elif boost_active and is_range %}
-              {# Leave a controller that is boosting on its own alone. #}
+              {# Leave a room thermostat that is boosting on its own alone. #}
               {% set mode = heat %}
               {% set temp = none if current_preset == 'boost'
                    or is_state(controller_boost_switches.get(id, ''), 'on') else clamp %}
@@ -1563,8 +1563,8 @@ actions:
               {% set ns.tasks = ns.tasks + [{'action': 'switch.turn_off', 'data': {'entity_id': switch}}] %}
             {% endif %}
           {% endfor %}
-          {# Controllers that follow windows always show the window state; valves only in native
-             mode. Controllers that ignore windows are kept closed, as their window input may
+          {# Room thermostats that follow windows always show the window state; valves only in native
+             mode. Room thermostats that ignore windows are kept closed, as their window input may
              stop them heating. #}
           {% for id, entity in window_inputs.items() %}
             {% set is_controller = id in controller_ids %}

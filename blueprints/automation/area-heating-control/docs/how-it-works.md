@@ -10,9 +10,9 @@ preset differs from the wanted state. In order of priority:
    - it is warm outside: the outdoor temperature is at or above the cutoff. Heating resumes once it
      drops below the cutoff minus the hysteresis; in between, the current state is kept. The outdoor
      temperature sensor is used first, the weather entity while the sensor has no valid value;
-   - a wall controller was turned off: the whole area stays off until it is turned on again;
-   - a window is open, handled as set in *Window open behaviour* (see below). Wall controllers keep
-     heating at the area target unless *Wall controller window behaviour* is *Follow*.
+   - a room thermostat was turned off: the whole area stays off until it is turned on again;
+   - a window is open, handled as set in *Window open behaviour* (see below). Room thermostats keep
+     heating at the area target unless *Room thermostat window behaviour* is *Follow*.
 
    Thermostats are turned off, or set to their minimum temperature if they have no off mode.
 3. **Boost**, while active: radiator thermostats use their `boost` preset, a boost switch on the
@@ -55,15 +55,15 @@ not start again.
 | Frost protection | Thermostats keep heating at the frost protection temperature (0: their minimum) |
 | Native | The window state is sent to each thermostat's window input, and the thermostat reacts itself. Thermostats without one are turned off |
 
-The window open behaviour applies to radiator thermostats. Wall controllers follow *Wall controller
+The window open behaviour applies to radiator thermostats. Room thermostats follow *Room thermostat
 window behaviour*:
 
-| Wall controller window behaviour | Effect while a window is open |
+| Room thermostat window behaviour | Effect while a window is open |
 | -------------------------------- | ----------------------------- |
-| Ignore (default) | The wall controller keeps heating at the area target, and changes on it are applied as usual. Its window input is kept closed |
-| Follow | The wall controller reacts like the radiator thermostats, and always gets the window state on its window input, so it can show it |
+| Ignore (default) | The room thermostat keeps heating at the area target, and changes on it are applied as usual. Its window input is kept closed |
+| Follow | The room thermostat reacts like the radiator thermostats, and always gets the window state on its window input, so it can show it |
 
-With *Ignore*, opening or closing a window does not end a temporary change on a wall controller.
+With *Ignore*, opening or closing a window does not end a temporary change on a room thermostat.
 Radiator thermostats resume at that temperature once all windows are closed.
 
 A window input is a `switch` or `select` on the thermostat's device whose id contains
@@ -77,7 +77,7 @@ detection (`detection`, `feature`, `function`, `enable`) are not used, except on
 A change counts as manual when no automation made it: on the device itself or in the Home Assistant
 UI. Changes that match the area target, such as a device confirming a command, are ignored.
 
-| Input mode | Radiator thermostats | Wall controllers |
+| Input mode | Radiator thermostats | Room thermostats |
 | ---------- | -------------------- | ---------------- |
 | Temporary | Kept until the next change in the area (default) | All thermostats follow it until the next change in the area |
 | Read-only | Reverted at once, child lock on | Reverted at once, child lock on |
@@ -91,11 +91,11 @@ child lock of the thermostat's device is turned on, if it has one: a `lock` or `
 contains `child_lock`, `childlock` or `child_protection`. In the other modes, the child lock is
 turned off when the automation is reloaded, for example after saving it, and left alone
 otherwise. While heating is off,
-changes on wall controllers are reverted, except while only a window is open and *Wall controller
+changes on room thermostats are reverted, except while only a window is open and *Room thermostat
 window behaviour* is *Ignore*. A change in the area is any event the blueprint reacts
 to, such as a schedule, a person, a window or the heating system. Selecting the `boost` preset on a
-wall controller, or turning on a boost switch on its device, boosts the whole area until the
-controller leaves the preset or the switch turns off.
+room thermostat, or turning on a boost switch on its device, boosts the whole area until the
+thermostat leaves the preset or the switch turns off.
 
 ## Boost
 
@@ -103,14 +103,14 @@ A boost starts when the boost trigger turns on, or is pressed for an `input_butt
 the boost duration. An `input_boolean` trigger is turned off again when the boost ends. While a
 boost is active, heating off reasons still apply.
 
-A boost can also start on the wall controller, see [Changes on thermostats](#changes-on-thermostats).
-With a wall controller in the area, it is the room's input: a boost started on a single radiator
+A boost can also start on the room thermostat, see [Changes on thermostats](#changes-on-thermostats).
+With a room thermostat in the area, it is the room's input: a boost started on a single radiator
 thermostat is not passed on to the area, and it ends with the next change in the area.
 
 ## Calibration
 
 Calibration is on by default. Every 5 minutes and after a start or reload, each
-radiator thermostat (and each wall controller, if temperature sensors exist) is made to use the area
+radiator thermostat (and each room thermostat, if temperature sensors exist) is made to use the area
 temperature:
 
 - If the thermostat's device has an **external temperature input** (a `number` whose id contains
@@ -128,7 +128,7 @@ temperature:
   clamped and rounded to the entity's range and step. It is only written if it changes by at least
   the calibration delta and the last change is older than the calibration timeout.
 
-The area temperature is the median of the temperature sensors, or of the wall controllers if there
-are no sensors. Sensors of a wall controller and excluded temperature sensors are never used as
-temperature sensors. Without sensors and wall controllers, calibration is skipped. Each thermostat
+The area temperature is the median of the temperature sensors, or of the room thermostats if there
+are no sensors. Sensors of a room thermostat and excluded temperature sensors are never used as
+temperature sensors. Without sensors and room thermostats, calibration is skipped. Each thermostat
 gets at most its own maximum temperature (`max_temp`), even if the area is warmer.

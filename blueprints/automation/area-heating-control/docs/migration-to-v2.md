@@ -15,7 +15,7 @@ a time.
 4. Rename the inputs as listed in [Input mapping](#input-mapping). Inputs you never set can be
    left out. All 2.0 inputs are listed in [Inputs](inputs.md).
 5. Save, and check the automation's **Traces** after its next run.
-6. Read the [behaviour changes](#behaviour-changes), especially for wall controllers.
+6. Read the [behaviour changes](#behaviour-changes), especially for room thermostats.
 7. Once no automation uses 1.x any more, delete the 1.x blueprint in
    **Settings → Automations & Scenes → Blueprints**.
 
@@ -102,13 +102,13 @@ it.
 - All selected schedules are used, not only the first one.
 - Window auto-discovery also finds door sensors.
 - The startup delay postpones changes instead of dropping them.
-- Changes on a wall controller made in the Home Assistant UI now count as well, and by default apply
+- Changes on a room thermostat made in the Home Assistant UI now count as well, and by default apply
   to the whole room. Since 2.2.0 they are written to the temperature entity by default, as in 1.x
   (`controller_behaviour: persistent`), and apply until the next change in the area without one.
-- Turning a wall controller off turns the whole area off.
+- Turning a room thermostat off turns the whole area off.
 
 ## New in 2.0
 
-Away temperature, vacation mode and away delay, input modes for radiator thermostats and wall
-controllers with child lock, window open behaviour and window inputs, outdoor cutoff with a sensor
+Away temperature, vacation mode and away delay, input modes for radiator thermostats and room
+thermostats with child lock, window open behaviour and window inputs, outdoor cutoff with a sensor
 and a weather entity, boost, and external temperature inputs.
