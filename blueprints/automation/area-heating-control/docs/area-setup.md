@@ -165,3 +165,5 @@ thermostats follow. To see why the area chose a temperature, enable the debug lo
   see [Calibration](how-it-works.md#calibration).
 - Check **Limescale protection**, which is on by default, and pick a day and time that suit you.
 - Choose a **Window open behaviour**, see [Windows](how-it-works.md#windows).
+- Show the area on a dashboard with [template entities](template-entities.md) for heating,
+  temperature, humidity and open windows.

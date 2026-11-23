@@ -62,6 +62,7 @@ sensors to create.
 - [Setting up an area](docs/area-setup.md): devices, helpers, sensors and the automation
 - [Inputs](docs/inputs.md): all inputs with their YAML keys and defaults
 - [How it works](docs/how-it-works.md): priorities, windows, changes on thermostats, boost and calibration
+- [Template entities](docs/template-entities.md): dashboard entities for heating, temperature, humidity and windows
 - [Troubleshooting](docs/troubleshooting.md): diagnostics, common problems, limitations and reporting issues
 - [Migrating to 2.0](docs/migration-to-v2.md): from the 1.x standalone blueprint
 
