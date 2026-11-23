@@ -69,6 +69,10 @@
       heating_system: binary_sensor.boiler_heating
       heating_system_delay:
         minutes: 3
+      display_brightness: true
+      display_daytime_entity: schedule.living_room_daytime
+      display_day_brightness: 80
+      display_night_brightness: 10
       action_delay:
         seconds: 1
       startup_delay:

@@ -16,6 +16,7 @@ a room and keeps them at the right temperature.
 - ♨️ Heating demand detection based on outdoor temperature and central heating system status
 - 🚀 Temperature boost support for a quick warm-up
 - 🎛️ Room thermostat support to control your area from one place
+- 🔆 Thermostat display brightness adjustment by daytime
 - ⚔️ Weekly limescale protection for radiator valves
 
 ## Requirements

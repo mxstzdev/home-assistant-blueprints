@@ -15,6 +15,7 @@ blueprint:
     - ♨️ Heating demand detection based on outdoor temperature and central heating system status
     - 🚀 Temperature boost support for a quick warm-up
     - 🎛️ Room thermostat support to control your area from one place
+    - 🔆 Thermostat display brightness adjustment by daytime
     - ⚔️ Weekly limescale protection for radiator valves
 
     [Documentation](https://github.com/mxstzdev/home-assistant-blueprints/tree/main/blueprints/automation/area-heating-control) · [Changelog](https://github.com/mxstzdev/home-assistant-blueprints/blob/main/blueprints/automation/area-heating-control/CHANGELOG.md)
@@ -620,6 +621,50 @@ blueprint:
               mode: box
               unit_of_measurement: °C
 
+    display_section:
+      name: Displays
+      icon: mdi:brightness-6
+      collapsed: true
+      input:
+        display_brightness:
+          name: Adjust display brightness
+          description: >
+            Sets the display brightness of the thermostats in this area by daytime: the day brightness during the day, the night brightness at night and while heating is off in the area. Used for every room thermostat and radiator thermostat whose device has a display brightness entity. Changes made on the device are overwritten with the next change in the area.
+          default: false
+          selector:
+            boolean:
+        display_daytime_entity:
+          name: Daytime
+          description: >
+            Optional. An entity that is on during the day, for example a schedule helper. **Empty:** it is day while the sun is above the horizon.
+          default: []
+          selector:
+            entity:
+              filter:
+                - domain:
+                    - schedule
+                    - input_boolean
+                    - binary_sensor
+        display_day_brightness:
+          name: Day brightness
+          default: 70
+          selector:
+            number:
+              min: 0
+              max: 100
+              step: 5
+              unit_of_measurement: "%"
+        display_night_brightness:
+          name: Night brightness
+          description: Also used while heating is off in the area.
+          default: 20
+          selector:
+            number:
+              min: 0
+              max: 100
+              step: 5
+              unit_of_measurement: "%"
+
     maintenance_section:
       name: Maintenance
       icon: mdi:tools
@@ -754,6 +799,10 @@ trigger_variables:
   outdoor_cutoff_hysteresis: !input outdoor_cutoff_hysteresis
   heating_system: !input heating_system
   heating_system_delay: !input heating_system_delay
+  display_brightness: !input display_brightness
+  display_daytime_entity: !input display_daytime_entity
+  display_day_brightness: !input display_day_brightness
+  display_night_brightness: !input display_night_brightness
   action_delay: !input action_delay
   startup_delay: !input startup_delay
   log_level: !input log_level
@@ -826,6 +875,18 @@ triggers:
       {% set t = ns.t %}
       {{ t is not none and t < outdoor_cutoff_temperature - outdoor_cutoff_hysteresis }}
     id: reconcile_outdoor_cold
+
+  # Day and night switch the display brightness.
+  - trigger: template
+    value_template: >
+      {{ display_brightness and (is_state(display_daytime_entity, 'on')
+         if display_daytime_entity is string else not is_state('sun.sun', 'below_horizon')) }}
+    id: reconcile_daytime_on
+  - trigger: template
+    value_template: >
+      {{ display_brightness and not (is_state(display_daytime_entity, 'on')
+         if display_daytime_entity is string else not is_state('sun.sun', 'below_horizon')) }}
+    id: reconcile_daytime_off
 
   - trigger: state
     entity_id: !input comfort_temperature_entity
@@ -1227,6 +1288,26 @@ actions:
         {% endfor %}
         {{ ns.map }}
 
+      # Display brightness entities on thermostat devices (number or select). Idle brightness
+      # entities (*_inactive) are left alone.
+      display_entities: >
+        {% set ns = namespace(map={}, seen=[]) %}
+        {% if display_brightness %}
+          {% for id in valve_ids + controller_ids %}
+            {% set device = device_id(id) %}
+            {% if device %}
+              {% set entities = device_entities(device) | select('match', '(number|select)[.]')
+                   | select('search', 'display_brightness(_active)?(_[0-9]+)?$')
+                   | reject('in', ns.seen) | list %}
+              {% if entities | count > 0 %}
+                {% set ns.map = dict(ns.map, **{id: entities}) %}
+                {% set ns.seen = ns.seen + entities %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        {{ ns.map }}
+
       # --- Area temperature -------------------------------------------------
       area_temperature: >
         {% set ns = namespace(values=[]) %}
@@ -1397,6 +1478,11 @@ actions:
         {{ ns.active or controller_ids | select('is_state_attr', 'preset_mode', 'boost') | list
            | count > 0 or controller_boost_switches.values() | select('is_state', 'on') | list
            | count > 0 }}
+
+      # Day for the display brightness: the daytime entity is on, or the sun is above the horizon.
+      daytime: >
+        {{ is_state(display_daytime_entity, 'on') if display_daytime_entity is string
+           else not is_state('sun.sun', 'below_horizon') }}
 
       # --- Level and target -------------------------------------------------
       level: >
@@ -1726,12 +1812,49 @@ actions:
         {% endif %}
         {{ ns.tasks }}
 
+      # Display brightness in percent, mapped onto each entity's range or options. Thermostats
+      # that heat get the day brightness during the day; all others the night brightness.
+      display_tasks: >
+        {% set ns = namespace(tasks=[]) %}
+        {% if display_brightness and run_reconcile %}
+          {% for id, entities in display_entities.items() %}
+            {% set off_reason = controller_off_reason if id in controller_ids else area_off_reason %}
+            {% set percent = (display_day_brightness if daytime and off_reason is none
+                 else display_night_brightness) | float %}
+            {% for entity in entities if states(entity) not in ['unknown', 'unavailable'] %}
+              {% if entity.startswith('select.') %}
+                {% set options = state_attr(entity, 'options') or [] %}
+                {% if options | count > 0 %}
+                  {% set option = options[(percent / 100 * (options | count - 1)) | round | int] %}
+                  {% if not is_state(entity, option) %}
+                    {% set ns.tasks = ns.tasks + [{'action': 'select.select_option',
+                         'data': {'entity_id': entity, 'option': option}}] %}
+                  {% endif %}
+                {% endif %}
+              {% else %}
+                {% set low = state_attr(entity, 'min') | float(0) %}
+                {% set high = state_attr(entity, 'max') | float(100) %}
+                {% set step = state_attr(entity, 'step') | float(1) %}
+                {% set step = step if step > 0 else 1 %}
+                {% set value = ((low + percent / 100 * (high - low)) / step) | round * step %}
+                {% set value = [[value, low] | max, high] | min %}
+                {% set value = value | int if value == value | int else value %}
+                {% if (states(entity) | float(-1000) - value) | abs >= step / 2 %}
+                  {% set ns.tasks = ns.tasks + [{'action': 'number.set_value',
+                       'data': {'entity_id': entity, 'value': value}}] %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        {% endif %}
+        {{ ns.tasks }}
+
       level_tasks: >
         {{ [{'action': 'input_number.set_value',
              'data': {'entity_id': level_entity_id, 'value': level_write}}]
            if level_write is not none else [] }}
 
-      tasks: "{{ level_tasks + calibration_tasks + thermostat_tasks }}"
+      tasks: "{{ level_tasks + calibration_tasks + thermostat_tasks + display_tasks }}"
 
   - if:
       - condition: template
