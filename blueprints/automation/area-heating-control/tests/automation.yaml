@@ -35,6 +35,8 @@
       limescale_protection_time: "11:30:00"
       windows:
         - binary_sensor.living_room_window
+      additional_door_window_sensors:
+        - binary_sensor.hallway_front_door
       window_open_behaviour: native
       window_open_delay:
         seconds: 30
