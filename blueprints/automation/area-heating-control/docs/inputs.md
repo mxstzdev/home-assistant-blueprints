@@ -111,6 +111,15 @@ active event. An unavailable workday entity counts as a workday.
 | Outdoor cutoff | `outdoor_cutoff_temperature` | 18 °C | Heating off at or above this temperature |
 | Outdoor hysteresis | `outdoor_cutoff_hysteresis` | 1 °C | Heating resumes below the cutoff minus this value |
 
+## Displays
+
+| Input | Key | Default | Description |
+| ----- | --- | ------- | ----------- |
+| Adjust display brightness | `display_brightness` | `false` | Sets the display brightness of thermostats by daytime |
+| Daytime | `display_daytime_entity` | | `schedule`, `input_boolean` or `binary_sensor` that is on during the day; empty: the sun |
+| Day brightness | `display_day_brightness` | 70 % | |
+| Night brightness | `display_night_brightness` | 20 % | Also used while heating is off in the area |
+
 ## Maintenance
 
 | Input | Key | Default | Description |

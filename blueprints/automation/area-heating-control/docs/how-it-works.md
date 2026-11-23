@@ -138,3 +138,21 @@ The area temperature is the median of the temperature sensors, or of the room th
 are no sensors. Sensors of a room thermostat and excluded temperature sensors are never used as
 temperature sensors. Without sensors and room thermostats, calibration is skipped. Each thermostat
 gets at most its own maximum temperature (`max_temp`), even if the area is warmer.
+
+## Display brightness
+
+With *Adjust display brightness* on, the automation sets the display brightness of every room
+thermostat and radiator thermostat whose device has a display brightness entity: a `number` or
+`select` whose id ends in `display_brightness` or `display_brightness_active`. Idle brightness
+entities (`display_brightness_inactive`) are left alone.
+
+- During the day, thermostats get the day brightness. At night, and while a thermostat does not heat
+  because heating is off in the area, they get the night brightness. Room thermostats that ignore
+  open windows keep the day brightness while a window is open.
+- It is day while the *Daytime* entity is on or, without one, while the sun is above the horizon.
+  If the sun integration is not set up, it is always day.
+- The brightness is given in percent and mapped onto the entity's range, rounded to its step. For a
+  `select`, it picks the option at the same position in the options list, for example `low`,
+  `medium`, `high`.
+- Changes made on the device, for example in Zigbee2MQTT, are overwritten with the next change in
+  the area, such as day turning into night.
