@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.5.0](https://github.com/mxstzdev/home-assistant-blueprints/compare/area-heating-control/2.4.0...area-heating-control/2.5.0) (2026-11-23)
+
+
+### Added
+
+* add door sensor and exclusion inputs ([2b6da71](https://github.com/mxstzdev/home-assistant-blueprints/commit/2b6da71e806b5f8da0db67b5aa2d684230c811da))
+* make window behaviour adjustable for wall controllers ([617c2e4](https://github.com/mxstzdev/home-assistant-blueprints/commit/617c2e4780cf283c629c0f3fc89f24b7dba47ede))
+* raise default person leave delay to 5 minutes ([a27b676](https://github.com/mxstzdev/home-assistant-blueprints/commit/a27b67618c733b35f3ac95c14e1f2861546c7841))
+* shorten default boost duration to 15 minutes ([3126ae6](https://github.com/mxstzdev/home-assistant-blueprints/commit/3126ae62050c46797b74a1a85e029d673f7be376))
+
+
+### Changed
+
+* rename wall controllers to room thermostats ([921504f](https://github.com/mxstzdev/home-assistant-blueprints/commit/921504f30c9b9d71196a9112178c64f1ef357434))
+* rename window_behaviour input to window_open_behaviour ([f1ff722](https://github.com/mxstzdev/home-assistant-blueprints/commit/f1ff722fae6466f263f62ef5e959475ac6ef0781))
+
 ## [2.4.0](https://github.com/mxstzdev/home-assistant-blueprints/compare/area-heating-control/2.3.0...area-heating-control/2.4.0) (2026-11-20)
 
 
