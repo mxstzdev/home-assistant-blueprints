@@ -49,6 +49,11 @@ not start again.
 
 ## Windows
 
+A window counts as open while a window or door sensor is `on`, `open` or `tilted`. *Window
+sensors* and *Door sensors* each use the area's sensors of that device class while empty, so a
+balcony door in the area counts without further setup. *Excluded door and window sensors* never
+count.
+
 | Window open behaviour | Effect while a window is open |
 | --------------------- | ----------------------------- |
 | Off (default) | Thermostats are turned off, or set to their minimum temperature |

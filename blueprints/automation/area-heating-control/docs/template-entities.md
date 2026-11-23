@@ -9,7 +9,7 @@ They use the area's entities the way the blueprint does.
 | [Heating](#heating) | Binary sensor | Whether the area should be warm, or whether its radiators are heating |
 | [Area temperature](#area-temperature) | Sensor | Median of the area's temperature sensors |
 | [Area humidity](#area-humidity) | Sensor | Median of the area's humidity sensors |
-| [Open windows](#open-windows) | Binary sensor | Whether a window in the area is open |
+| [Open windows](#open-windows) | Binary sensor | Whether a window or door in the area is open |
 
 ## Creating an entity
 
@@ -164,8 +164,9 @@ skipped. `sensors` and `exclude` work as for the [area temperature](#area-temper
 
 ## Open windows
 
-On while at least one window sensor of the area is open or tilted. Select window sensors yourself
-in `windows`, which turns off auto-discovery.
+On while at least one window or door sensor of the area is open or tilted, like the automation.
+Select sensors yourself in `windows` or `doors`, which turns off auto-discovery for that list, and
+add sensors that never count to `excluded`.
 
 | Setting | Value |
 | ------- | ----- |
@@ -174,15 +175,14 @@ in `windows`, which turns off auto-discovery.
 ```jinja
 {% set area = 'living_room' %}
 {% set windows = [] %}
-{% set ids = windows if windows | count > 0 else area_entities(area)
-     | select('match', '(binary_)?sensor[.]') | select('is_state_attr', 'device_class', 'window')
-     | list %}
-{{ ids | select('is_state', ['on', 'open', 'tilted']) | list | count > 0 }}
+{% set doors = [] %}
+{% set excluded = [] %}
+{% set found = area_entities(area) | select('match', '(binary_)?sensor[.]') | list %}
+{% set ids = (windows if windows | count > 0
+     else found | select('is_state_attr', 'device_class', 'window') | list)
+     + (doors if doors | count > 0 else found | select('is_state_attr', 'device_class', 'door') | list) %}
+{{ ids | reject('in', excluded) | select('is_state', ['on', 'open', 'tilted']) | list | count > 0 }}
 ```
-
-The automation also counts door sensors, see [Windows](how-it-works.md#windows). For an
-**open doors** entity, replace `'window'` with `'door'` in the template and choose the device class
-*Door*.
 
 To list the open windows on a dashboard, add an attribute in YAML:
 

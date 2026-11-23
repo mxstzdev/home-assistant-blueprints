@@ -15,11 +15,12 @@ the entity itself or its device is assigned to it.
 | Radiator thermostats (TRVs) | `climate` entities with a single target temperature |
 | Room thermostats | `climate` entities with a target temperature range |
 | Room temperature sensors | `sensor` entities with device class `temperature` that are not part of a thermostat |
-| Window and door sensors | `binary_sensor` or `sensor` entities with device class `window` or `door` |
+| Window sensors | `binary_sensor` or `sensor` entities with device class `window` |
+| Door sensors | `binary_sensor` or `sensor` entities with device class `door` |
 
-If auto-discovery picks up something you do not want, for example a door sensor on the hallway
-door, select the wanted entities explicitly in the automation. A selection replaces the
-auto-discovery for that input.
+If auto-discovery picks up something you do not want, select the wanted entities explicitly in the
+automation. A selection replaces the auto-discovery for that input only. To drop a single sensor,
+for example a wardrobe door, add it to *Excluded door and window sensors* instead.
 
 ## 2. Create helpers
 
