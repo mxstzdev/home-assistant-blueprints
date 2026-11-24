@@ -1,0 +1,93 @@
+name: Bug report
+description: Report a blueprint that does not work as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Thanks for reporting a bug. Please check the blueprint's documentation and troubleshooting
+        guide first, and search the existing issues for the same problem.
+  - type: dropdown
+    id: blueprint
+    attributes:
+      label: Blueprint
+      description: The blueprint the problem is about. The issue gets a label of the same name.
+      options:
+        # Blueprint names, kept sorted by scripts/create-blueprint.sh.
+        # blueprints:start
+        - area-heating-control
+        # blueprints:end
+    validations:
+      required: true
+  - type: input
+    id: blueprint-version
+    attributes:
+      label: Blueprint version
+      description: Shown in the Version badge at the top of the blueprint's description.
+      placeholder: 2.5.0
+    validations:
+      required: true
+  - type: input
+    id: ha-version
+    attributes:
+      label: Home Assistant version
+      description: Shown under **Settings → About**.
+      placeholder: 2026.11.2
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What the automation did, or did not do, and when.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+  - type: textarea
+    id: automation-yaml
+    attributes:
+      label: Automation YAML
+      description: Open the automation, then **⋮ → Edit in YAML**, and paste it here.
+      render: yaml
+    validations:
+      required: true
+  - type: textarea
+    id: devices
+    attributes:
+      label: Devices
+      description: >-
+        The models of the devices involved and their integration, for example thermostat models
+        with Zigbee2MQTT or ZHA.
+    validations:
+      required: true
+  - type: textarea
+    id: trace
+    attributes:
+      label: Trace or log entries
+      description: >-
+        The trace of the run in question (open the automation, then **⋮ → Traces → ⋮ → Download
+        trace**), attached as a file, or the matching log entries. If the automation never ran,
+        write "no run".
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I use the latest release of the blueprint.
+          required: true
+        - label: I searched the existing issues for this problem.
+          required: true

@@ -207,7 +207,7 @@ are resolved by assumption:
 
 ## Reporting a problem
 
-Open an [issue](https://github.com/mxstzdev/home-assistant-blueprints/issues) with:
+Open a [bug report](https://github.com/mxstzdev/home-assistant-blueprints/issues/new?template=bug_report.yml). It asks for:
 
 - the Home Assistant version and the blueprint version (the Version badge in its description);
 - the automation's YAML (⋮ → **Edit in YAML**);

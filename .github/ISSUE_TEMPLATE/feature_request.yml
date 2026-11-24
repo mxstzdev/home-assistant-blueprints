@@ -1,0 +1,37 @@
+name: Feature request
+description: Suggest an idea for a blueprint or the repository.
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: blueprint
+    attributes:
+      label: Blueprint
+      description: The blueprint the idea is about. The issue gets a label of the same name.
+      options:
+        # Blueprint names, kept sorted by scripts/create-blueprint.sh.
+        # blueprints:start
+        - area-heating-control
+        # blueprints:end
+        - New blueprint
+        - Repository / tooling
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do, and what stops you today?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How the blueprint or the repository could solve it.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Workarounds or other solutions you have considered.
