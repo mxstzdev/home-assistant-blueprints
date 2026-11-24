@@ -132,6 +132,6 @@ active event. An unavailable workday entity counts as a workday.
 
 | Input | Key | Default | Description |
 | ----- | --- | ------- | ----------- |
-| Action delay | `action_delay` | 0 s | Delay between two device commands |
-| Startup delay | `startup_delay` | 0 s | Delay after a Home Assistant start |
 | Log level | `log_level` | `info` | `debug`, `info` or `warning`, see [Diagnostics](troubleshooting.md#diagnostics) |
+| Startup delay | `startup_delay` | 0 s | Delay after a Home Assistant start |
+| Action delay | `action_delay` | 0 s | Delay between two device commands |

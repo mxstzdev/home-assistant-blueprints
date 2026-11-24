@@ -709,23 +709,6 @@ blueprint:
       icon: mdi:cog-box
       collapsed: true
       input:
-        action_delay:
-          name: Action delay
-          description: >
-            Delay between two device commands, to avoid flooding Zigbee or Z-Wave networks.
-          default:
-            seconds: 0
-          selector:
-            duration:
-        startup_delay:
-          name: Startup delay
-          description: >
-            Delay after a Home Assistant start, so that integrations and sensors are ready. Changes
-            during the delay are handled after it.
-          default:
-            seconds: 0
-          selector:
-            duration:
         log_level:
           name: Log level
           description: >
@@ -741,6 +724,23 @@ blueprint:
                   value: info
                 - label: Warning
                   value: warning
+        startup_delay:
+          name: Startup delay
+          description: >
+            Delay after a Home Assistant start, so that integrations and sensors are ready. Changes
+            during the delay are handled after it.
+          default:
+            seconds: 0
+          selector:
+            duration:
+        action_delay:
+          name: Action delay
+          description: >
+            Delay between two device commands, to avoid flooding Zigbee or Z-Wave networks.
+          default:
+            seconds: 0
+          selector:
+            duration:
 
 # yamllint enable rule:line-length
 mode: queued
