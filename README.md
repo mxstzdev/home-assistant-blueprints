@@ -32,7 +32,7 @@ blueprint's description. To update, re-import the blueprint and confirm overwrit
 ## Support
 
 - **Found a bug or have an idea?**
-  [Open an issue](https://github.com/mxstzdev/home-assistant-blueprints/issues).
+  [Open an issue](https://github.com/mxstzdev/home-assistant-blueprints/issues/new/choose).
 - **Want to fix or improve something?** Pull requests are welcome, see
   [CONTRIBUTING.md](CONTRIBUTING.md).
 - **Enjoying the blueprints?** You can support the work on Ko-fi:

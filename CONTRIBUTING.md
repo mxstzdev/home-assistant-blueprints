@@ -1,8 +1,8 @@
 # Contributing
 
-Thanks for helping out. Bug reports and ideas go to
-[issues](https://github.com/mxstzdev/home-assistant-blueprints/issues); changes go through
-pull requests against `main`.
+Thanks for helping out. Bug reports and ideas go to the
+[issue forms](https://github.com/mxstzdev/home-assistant-blueprints/issues/new/choose); changes
+go through pull requests against `main`.
 
 ## Requirements
 
@@ -40,7 +40,8 @@ scripts/                    # helpers used by make and CI
    ```
 
    This creates the folder above, registers the blueprint in
-   `release-please-config.json`, and prints the row for [README.md](README.md). Add it
+   `release-please-config.json` and in the Blueprint dropdown of both issue forms in
+   `.github/ISSUE_TEMPLATE/`, and prints the row for [README.md](README.md). Add it
    to the table under the domain's sub-heading (`### Automations` or `### Scripts`),
    creating that sub-heading and table if this is the domain's first blueprint.
 2. Replace every `TODO` in the blueprint, its README and `tests/<domain>.yaml`.
@@ -71,6 +72,15 @@ scripts/                    # helpers used by make and CI
      ids.
    - Do not edit `CHANGELOG.md`.
 4. Run `make lint test BLUEPRINT=blueprints/<domain>/<name>`.
+
+## Issues
+
+The bug report and feature request forms in `.github/ISSUE_TEMPLATE/` ask for the
+blueprint in a dropdown. Its options are the blueprint names, kept sorted between the
+`# blueprints:start` and `# blueprints:end` comments, which `scripts/create-blueprint.sh`
+relies on. The `issue-labels.yml` workflow labels each issue with the chosen blueprint, and
+GitHub creates that label the first time it is used. Only names from the bug report's list
+become labels.
 
 ## Validation
 

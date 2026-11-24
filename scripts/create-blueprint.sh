@@ -4,7 +4,8 @@
 #
 # Creates blueprints/<domain>/<name>/ with the blueprint YAML, README.md,
 # CHANGELOG.md and tests/<domain>.yaml, adds the package to
-# release-please-config.json and prints the row for the README table.
+# release-please-config.json and the Blueprint dropdown of the issue forms,
+# and prints the row for the README table.
 
 set -euo pipefail
 
@@ -21,6 +22,11 @@ readonly INITIAL_VERSION="0.1.0"
 readonly DEFAULT_DOMAIN="automation"
 readonly DEFAULT_MIN_VERSION="2025.1.0"
 readonly RELEASE_CONFIG="${ROOT_DIR}/release-please-config.json"
+readonly ISSUE_FORMS_DIR="${ROOT_DIR}/.github/ISSUE_TEMPLATE"
+ISSUE_FORMS=(bug_report.yml feature_request.yml)
+readonly ISSUE_FORMS
+readonly LIST_START="# blueprints:start"
+readonly LIST_END="# blueprints:end"
 USAGE="Usage: $(basename "$0") [-d automation|script] [-m min_version] <name>"
 readonly USAGE
 
@@ -284,6 +290,52 @@ register_package() {
   mv "${tmp}" "${RELEASE_CONFIG}"
 }
 
+#######################################
+# Adds the blueprint to the Blueprint dropdown of each issue form. The names
+# between the list markers are kept sorted; entries after the end marker,
+# such as "New blueprint", stay where they are.
+# Globals:
+#   ISSUE_FORMS
+#   ISSUE_FORMS_DIR
+#   LIST_END
+#   LIST_START
+# Arguments:
+#   Name.
+#######################################
+register_issue_forms() {
+  local name="$1"
+  local form tmp
+
+  for form in "${ISSUE_FORMS[@]}"; do
+    form="${ISSUE_FORMS_DIR}/${form}"
+    tmp="$(mktemp)"
+    awk -v name="${name}" -v start="${LIST_START}" -v end="${LIST_END}" '
+      function add() {
+        printf "%s- %s\n", indent, name
+        added = 1
+      }
+      index($0, start) {
+        print
+        inside = 1
+        match($0, /^ */)
+        indent = substr($0, 1, RLENGTH)
+        next
+      }
+      inside && index($0, end) {
+        if (!added) add()
+        inside = 0
+      }
+      inside && !added {
+        entry = $0
+        sub(/^ *- */, "", entry)
+        if (entry > name) add()
+      }
+      { print }
+    ' "${form}" > "${tmp}"
+    mv "${tmp}" "${form}"
+  done
+}
+
 main() {
   local domain="${DEFAULT_DOMAIN}"
   local min_version="${DEFAULT_MIN_VERSION}"
@@ -346,6 +398,19 @@ main() {
     err "${name} is already registered in release-please-config.json"
     exit 1
   fi
+  local form
+  for form in "${ISSUE_FORMS[@]}"; do
+    form="${ISSUE_FORMS_DIR}/${form}"
+    if ! grep -qF -- "${LIST_START}" "${form}" \
+      || ! grep -qF -- "${LIST_END}" "${form}"; then
+      err "no blueprint list markers in ${form#"${ROOT_DIR}/"}"
+      exit 1
+    fi
+    if grep -qE -- "^ *- ${name} *\$" "${form}"; then
+      err "${name} is already listed in ${form#"${ROOT_DIR}/"}"
+      exit 1
+    fi
+  done
 
   local title source_url import_url
   title="$(to_title "${name}")"
@@ -361,8 +426,10 @@ main() {
     "${import_url}" "${min_version}"
   write_changelog "${dir}/CHANGELOG.md"
   register_package "${path}" "${name}"
+  register_issue_forms "${name}"
 
-  echo "Created ${path} and registered it in release-please-config.json."
+  echo "Created ${path} and registered it in release-please-config.json and the"
+  echo "issue forms."
   local section
   section="$(to_title "${domain}")s"
   echo "Add this row to the table under '### ${section}' in README.md:"

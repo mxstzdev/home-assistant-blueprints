@@ -1,0 +1,49 @@
+name: Issue labels
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions: {}
+
+jobs:
+  # Labels issues from the issue forms with the blueprint chosen in their Blueprint field.
+  blueprint:
+    if: contains(github.event.issue.body, '### Blueprint')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            // The issue body is user input, so only names from the bug form's list are used.
+            const { data: form } = await github.rest.repos.getContent({
+              ...context.repo,
+              path: ".github/ISSUE_TEMPLATE/bug_report.yml",
+              mediaType: { format: "raw" },
+            });
+            const list = /# blueprints:start\n([\s\S]*?)# blueprints:end/.exec(form);
+            if (!list) {
+              core.setFailed("No blueprint list found in bug_report.yml");
+              return;
+            }
+            const blueprints = [...list[1].matchAll(/^\s*- (\S+)\s*$/gm)].map((m) => m[1]);
+
+            // Issue forms write each field as "### <label>", a blank line and the value.
+            const field = /^### Blueprint[ \t]*\r?\n\s*([^\r\n]*)/m.exec(context.payload.issue.body);
+            const chosen = field?.[1].trim();
+            const wanted = blueprints.includes(chosen) ? chosen : null;
+
+            const issue = { ...context.repo, issue_number: context.payload.issue.number };
+            const current = context.payload.issue.labels.map((label) => label.name);
+            for (const name of current) {
+              if (blueprints.includes(name) && name !== wanted) {
+                await github.rest.issues.removeLabel({ ...issue, name });
+              }
+            }
+            if (wanted && !current.includes(wanted)) {
+              // GitHub creates a label that does not exist yet.
+              await github.rest.issues.addLabels({ ...issue, labels: [wanted] });
+            }
