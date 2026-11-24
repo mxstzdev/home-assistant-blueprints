@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.6.0](https://github.com/mxstzdev/home-assistant-blueprints/compare/area-heating-control/2.5.0...area-heating-control/2.6.0) (2026-11-24)
+
+
+### Added
+
+* add additional door and window sensors input ([dbd353b](https://github.com/mxstzdev/home-assistant-blueprints/commit/dbd353b9f5737e2a57cc2344a5047d2dccd11837))
+* add issue forms with per-blueprint label ([b0b3c12](https://github.com/mxstzdev/home-assistant-blueprints/commit/b0b3c12deb958890ec369aa582414ed97ff82952))
+* adjust display brightness by daytime ([b08a448](https://github.com/mxstzdev/home-assistant-blueprints/commit/b08a448604d54ec601a263bc0a87f05e35dc499d))
+
+
+### Changed
+
+* reorder advanced inputs by relevance ([2f9df00](https://github.com/mxstzdev/home-assistant-blueprints/commit/2f9df0026532f9b72d8a3acf9bd1947ada053bc8))
+
 ## [2.5.0](https://github.com/mxstzdev/home-assistant-blueprints/compare/area-heating-control/2.4.0...area-heating-control/2.5.0) (2026-11-23)
 
 
